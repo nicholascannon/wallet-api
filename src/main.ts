@@ -1,9 +1,9 @@
 import express from 'express';
 import {
-  LOGGER,
-  loggingMiddleware,
   setupProcessLogging,
-} from '@/lib/logger.js';
+  loggingMiddleware,
+  LOGGER,
+} from './lib/logger.js';
 
 setupProcessLogging();
 

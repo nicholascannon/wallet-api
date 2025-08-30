@@ -3,7 +3,7 @@
   "packageManager": "yarn@4.5.2",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf ./dist && tsc",
     "dev": "tsx watch src/main.ts"
   },
   "devDependencies": {
