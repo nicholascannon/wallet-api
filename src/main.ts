@@ -1,17 +1,10 @@
-import express from 'express';
-import {
-  setupProcessLogging,
-  loggingMiddleware,
-  LOGGER,
-} from './lib/logger.js';
+import { setupProcessLogging, LOGGER } from './lib/logger.js';
+import { createApp } from './app.js';
+import { lifecycle } from './lib/lifecycle.js';
 
 setupProcessLogging();
 
-const app = express();
-app.use(loggingMiddleware);
-
-app.get('/', (_, res) => res.send('Wallet API'));
-
-app.listen(3000, () =>
-  LOGGER.info('Server is running on http://localhost:3000')
-);
+const app = createApp().listen(3000, () => {
+  LOGGER.info('Server is running on http://localhost:3000');
+  lifecycle.on('close', () => app.close(() => LOGGER.info('Server closed')));
+});
