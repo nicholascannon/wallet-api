@@ -15,3 +15,19 @@ export const loggingMiddleware = expressWinston.logger({
   headerBlacklist: ['authorization', 'cookie'],
   ignoreRoute: (req) => req.path === '/healthcheck',
 });
+
+export const setupProcessLogging = () => {
+  process
+    .on('uncaughtException', (error) => {
+      LOGGER.error('uncaughtException', error);
+    })
+    .on('unhandledRejection', (reason) => {
+      LOGGER.error('unhandledRejection', reason);
+    })
+    .on('SIGTERM', () => {
+      LOGGER.info('SIGTERM received');
+    })
+    .on('SIGINT', () => {
+      LOGGER.info('SIGINT received');
+    });
+};

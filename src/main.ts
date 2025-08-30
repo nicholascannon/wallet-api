@@ -1,5 +1,11 @@
 import express from 'express';
-import { LOGGER, loggingMiddleware } from '@/lib/logger.js';
+import {
+  LOGGER,
+  loggingMiddleware,
+  setupProcessLogging,
+} from '@/lib/logger.js';
+
+setupProcessLogging();
 
 const app = express();
 app.use(loggingMiddleware);
