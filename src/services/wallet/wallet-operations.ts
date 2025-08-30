@@ -1,7 +1,4 @@
-export interface Wallet {
-	id: string;
-	balance: number;
-}
+import type { Wallet } from './types.js';
 
 export function debit(wallet: Wallet, amount: number): Wallet {
 	if (amount > wallet.balance) {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Wallet } from '../wallet.js';
-import { credit, debit } from '../wallet.js';
+import type { Wallet } from '../types.js';
+import { credit, debit } from '../wallet-operations.js';
 
-describe('Wallet domain functions', () => {
+describe('Wallet operations', () => {
 	const baseWallet: Wallet = { id: 'w1', balance: 100 };
 
 	describe('credit', () => {
