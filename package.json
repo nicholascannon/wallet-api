@@ -1,0 +1,11 @@
+{
+  "name": "wallet-api",
+  "packageManager": "yarn@4.5.2",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  }
+}
