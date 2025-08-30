@@ -1,11 +1,10 @@
 import express from 'express';
+import { LOGGER } from '@/lib/logger.js';
 
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Hello, World!!!!!!');
-});
+app.get('/', (_, res) => res.send('Wallet API'));
 
 app.listen(3000, () =>
-  console.log('Server is running on http://localhost:3000')
+  LOGGER.info('Server is running on http://localhost:3000')
 );
