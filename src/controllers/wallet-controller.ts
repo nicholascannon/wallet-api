@@ -8,10 +8,10 @@ export class WalletController {
 		this.router.get('/:id', this.getWallet);
 	}
 
-	private getWallet = (req: Request, res: Response): Response => {
+	private getWallet(req: Request, res: Response): Response {
 		return res.json({
 			id: req.params.id,
 			balance: 100,
 		});
-	};
+	}
 }
