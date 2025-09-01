@@ -7,6 +7,8 @@ export class WalletController {
 	constructor(private readonly walletService: WalletService) {
 		this.router = Router();
 		this.router.get('/:id', this.getBalance);
+		this.router.post('/:id/debit', this.debit);
+		this.router.post('/:id/credit', this.credit);
 	}
 
 	private getBalance = async (req: Request, res: Response) => {
@@ -14,5 +16,23 @@ export class WalletController {
 		const balance = await this.walletService.getBalance(walletId);
 
 		return res.json({ balance });
+	};
+
+	private debit = async (req: Request, res: Response) => {
+		const walletId = req.params.id as string; // it's in the route
+		const { amount } = req.body as { amount: number }; // TODO: validate
+
+		const updatedWallet = await this.walletService.debit(walletId, amount);
+
+		return res.status(201).json(updatedWallet);
+	};
+
+	private credit = async (req: Request, res: Response) => {
+		const walletId = req.params.id as string; // it's in the route
+		const { amount } = req.body as { amount: number }; // TODO: validate
+
+		const updatedWallet = await this.walletService.credit(walletId, amount);
+
+		return res.status(201).json(updatedWallet);
 	};
 }
