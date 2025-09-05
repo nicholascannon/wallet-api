@@ -1,6 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WalletMemoryRepo } from '../../../data/repositories/wallet-memory-repo.js';
 import { WalletService } from '../wallet-service.js';
+
+vi.mock('../../../lib/logger.js');
 
 describe('WalletService', () => {
 	let repo: WalletMemoryRepo;
