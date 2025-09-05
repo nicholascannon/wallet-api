@@ -1,4 +1,4 @@
-import type { WalletRepository } from '../repository.js';
+import type { WalletRepository } from '../../services/wallet/repository.js';
 
 export class WalletMemoryRepo implements WalletRepository {
 	private wallets = new Map<string, number>();

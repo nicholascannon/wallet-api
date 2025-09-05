@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { WalletMemoryRepo } from '../../../data/repositories/wallet-memory-repo.js';
 import { WalletService } from '../wallet-service.js';
-import { WalletMemoryRepo } from './wallet-memory-repo.js';
 
 describe('WalletService', () => {
 	let repo: WalletMemoryRepo;
