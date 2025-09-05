@@ -28,12 +28,11 @@ export class WalletService {
 		amount: number,
 	): Promise<{ created: boolean; balance: number }> {
 		const balance = await this.repo.getBalance(walletId);
-		if (!balance) {
-			LOGGER.info(`Creating wallet with ID ${walletId}`);
-		}
 
 		const creditedBalance = credit({ balance: balance || 0, amount });
 		await this.repo.updateBalance(walletId, creditedBalance);
+
+		if (!balance) LOGGER.info('Created new wallet', { walletId });
 
 		return { created: !balance, balance: creditedBalance };
 	}
