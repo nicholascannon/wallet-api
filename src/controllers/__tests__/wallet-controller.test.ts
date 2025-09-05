@@ -92,6 +92,28 @@ describe('WalletController', () => {
 			expect(res.body).toEqual({ balance: 15 });
 		});
 
+		it('returns 400 and message for insufficient funds', async () => {
+			// Credit wallet with 5, then try to debit 10
+			await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.send({ amount: 5 });
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.send({ amount: 10 });
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Insufficient funds');
+		});
+
+		it('returns 404 and message for wallet not found', async () => {
+			// Use a new walletId that does not exist and try to debit
+			const nonExistentId = '123e4567-e89b-12d3-a456-426614174111';
+			const res = await request(app)
+				.post(`/v1/wallet/${nonExistentId}/debit`)
+				.send({ amount: 10 });
+			expect(res.status).toBe(404);
+			expect(res.body).toHaveProperty('message', 'Wallet not found');
+		});
+
 		it('returns 400 for invalid wallet id', async () => {
 			const res = await request(app)
 				.post('/v1/wallet/not-a-uuid/debit')

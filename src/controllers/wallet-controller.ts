@@ -1,4 +1,9 @@
-import { type Request, type Response, Router } from 'express';
+import {
+	type ErrorRequestHandler,
+	type Request,
+	type Response,
+	Router,
+} from 'express';
 import * as z from 'zod';
 import type { WalletService } from '../services/wallet/wallet-service.js';
 
@@ -10,7 +15,19 @@ export class WalletController {
 		this.router.get('/:id', this.getBalance);
 		this.router.post('/:id/debit', this.debit);
 		this.router.post('/:id/credit', this.credit);
+		this.router.use(this.errorHandler);
 	}
+
+	private errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
+		if (error instanceof Error && error.message === 'Insufficient funds') {
+			return res.status(400).json({ message: error.message });
+		}
+		if (error instanceof Error && error.message === 'Wallet not found') {
+			return res.status(404).json({ message: error.message });
+		}
+
+		return next(error);
+	};
 
 	private readonly getBalanceSchema = z.uuid();
 
