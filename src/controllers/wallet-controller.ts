@@ -1,5 +1,5 @@
 import { type Request, type Response, Router } from 'express';
-import type { WalletService } from '../services/wallet/index.js';
+import type { WalletService } from '../services/wallet/wallet-service.js';
 
 export class WalletController {
 	public readonly router: Router;

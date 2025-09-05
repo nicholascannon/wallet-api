@@ -4,7 +4,7 @@ import express from 'express';
 import { WalletController } from './controllers/wallet-controller.js';
 import { PgWalletRepo } from './data/repositories/pg-wallet-repo.js';
 import { loggingMiddleware } from './lib/logger.js';
-import { WalletService } from './services/wallet/index.js';
+import { WalletService } from './services/wallet/wallet-service.js';
 
 export function createApp(db: NodePgDatabase): Application {
 	const app = express();
