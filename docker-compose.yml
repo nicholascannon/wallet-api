@@ -1,0 +1,25 @@
+services:
+  db:
+    image: postgres:13.5-alpine
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 1s
+      timeout: 2s
+      retries: 15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: wallet
+    ports:
+      - 5432:5432
+
+  wallet-api:
+    build: .
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgres://postgres:postgres@db:5432/wallet
+    ports:
+      - 8000:8000
+    depends_on:
+      db:
+        condition: service_healthy
