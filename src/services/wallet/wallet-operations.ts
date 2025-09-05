@@ -7,6 +7,8 @@ export function debit(transaction: {
 	const balance = new Decimal(transaction.balance);
 	const amount = new Decimal(transaction.amount);
 
+	if (amount.lessThan(0))
+		throw new Error(`Debit amount cannot be less than 0: ${amount.toNumber()}`);
 	if (amount.greaterThan(balance)) {
 		throw new Error('Insufficient funds'); // TODO: Create custom error class
 	}
