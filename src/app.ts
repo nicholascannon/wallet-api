@@ -1,18 +1,22 @@
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Application } from 'express';
 import express from 'express';
 import { WalletController } from './controllers/wallet-controller.js';
-import { PgWalletRepo } from './data/repositories/pg-wallet-repo.js';
 import { loggingMiddleware } from './lib/logger.js';
+import type { WalletRepository } from './services/wallet/repository.js';
 import { WalletService } from './services/wallet/wallet-service.js';
 
-export function createApp(db: NodePgDatabase): Application {
+export function createApp({
+	walletRepo,
+	enableLogging = true,
+}: {
+	walletRepo: WalletRepository;
+	enableLogging?: boolean;
+}): Application {
 	const app = express();
 
-	app.use(loggingMiddleware);
+	if (enableLogging) app.use(loggingMiddleware);
 	app.use(express.json());
 
-	const walletRepo = new PgWalletRepo(db);
 	const walletService = new WalletService(walletRepo);
 	const walletController = new WalletController(walletService);
 
