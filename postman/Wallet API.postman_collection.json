@@ -1,0 +1,92 @@
+{
+	"info": {
+		"_postman_id": "ee8c5773-33db-49ca-acc7-a7ed3dcbc26a",
+		"name": "Wallet API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"v1",
+						"wallet",
+						"4bcaf50f-7c95-4f97-9a08-fbaddf966cb9"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 100000000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"v1",
+						"wallet",
+						"4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
+						"credit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"amount\": 100000000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"v1",
+						"wallet",
+						"4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
+						"debit"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
