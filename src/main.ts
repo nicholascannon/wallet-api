@@ -11,7 +11,7 @@ const { db, pool } = createDb();
 
 const app = createApp({
 	walletRepo: new PgWalletRepo(db),
-}).listen(3000, () => {
+}).listen(process.env.PORT, () => {
 	LOGGER.info('Server is running on http://localhost:3000');
 
 	lifecycle.on('close', () =>
