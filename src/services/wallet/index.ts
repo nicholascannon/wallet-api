@@ -1,31 +1,40 @@
-import type { Wallet } from './types.js';
+import { LOGGER } from '../../lib/logger.js';
+import type { WalletRepository } from './repository.js';
 import { credit, debit } from './wallet-operations.js';
 
 export class WalletService {
-	public async getBalance(_walletId: string): Promise<number> {
-		// TODO: get wallet from DB
-		return 100;
+	constructor(private readonly repo: WalletRepository) {}
+
+	public async getBalance(walletId: string): Promise<number> {
+		const balance = await this.repo.getBalance(walletId);
+		return balance ?? 0;
 	}
 
-	public async debit(_walletId: string, amount: number): Promise<Wallet> {
-		// TODO: get wallet from DB
-		const wallet: Wallet = { id: _walletId, balance: 100 };
+	public async debit(
+		walletId: string,
+		amount: number,
+	): Promise<{ balance: number }> {
+		const balance = await this.repo.getBalance(walletId);
+		if (!balance) throw new Error('Wallet not found'); // custom error?
 
-		const debitedWallet = debit(wallet, amount);
+		const debitedBalance = debit({ balance, amount });
+		await this.repo.updateBalance(walletId, debitedBalance);
 
-		// TODO: save wallet to DB
-
-		return debitedWallet;
+		return { balance: debitedBalance };
 	}
 
-	public async credit(_walletId: string, amount: number): Promise<Wallet> {
-		// TODO: get wallet from DB
-		const wallet: Wallet = { id: _walletId, balance: 100 };
+	public async credit(
+		walletId: string,
+		amount: number,
+	): Promise<{ created: boolean; balance: number }> {
+		const balance = await this.repo.getBalance(walletId);
+		if (!balance) {
+			LOGGER.info(`Creating wallet with ID ${walletId}`);
+		}
 
-		const creditedWallet = credit(wallet, amount);
+		const creditedBalance = credit({ balance: balance || 0, amount });
+		await this.repo.updateBalance(walletId, creditedBalance);
 
-		// TODO: save wallet to DB
-
-		return creditedWallet;
+		return { created: !balance, balance: creditedBalance };
 	}
 }

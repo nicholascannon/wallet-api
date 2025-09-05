@@ -22,17 +22,20 @@ export class WalletController {
 		const walletId = req.params.id as string; // it's in the route
 		const { amount } = req.body as { amount: number }; // TODO: validate
 
-		const updatedWallet = await this.walletService.debit(walletId, amount);
+		const { balance } = await this.walletService.debit(walletId, amount);
 
-		return res.status(201).json(updatedWallet);
+		return res.status(200).json({ balance });
 	};
 
 	private credit = async (req: Request, res: Response) => {
 		const walletId = req.params.id as string; // it's in the route
 		const { amount } = req.body as { amount: number }; // TODO: validate
 
-		const updatedWallet = await this.walletService.credit(walletId, amount);
+		const { balance, created } = await this.walletService.credit(
+			walletId,
+			amount,
+		);
 
-		return res.status(201).json(updatedWallet);
+		return res.status(created ? 201 : 200).json({ balance });
 	};
 }
