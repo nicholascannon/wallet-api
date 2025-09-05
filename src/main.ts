@@ -7,12 +7,14 @@ import { LOGGER, setupProcessLogging } from './lib/logger.js';
 
 setupProcessLogging();
 
+const PORT = process.env.PORT;
+
 const { db, pool } = createDb();
 
 const app = createApp({
 	walletRepo: new PgWalletRepo(db),
-}).listen(process.env.PORT, () => {
-	LOGGER.info('Server is running on http://localhost:3000');
+}).listen(PORT, () => {
+	LOGGER.info('Server started', { port: PORT });
 
 	lifecycle.on('close', () =>
 		app.close(() => {
