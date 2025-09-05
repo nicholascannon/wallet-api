@@ -12,7 +12,7 @@ export class WalletController {
 		this.router.post('/:id/credit', this.credit);
 	}
 
-	private getBalanceSchema = z.uuid();
+	private readonly getBalanceSchema = z.uuid();
 
 	private getBalance = async (req: Request, res: Response) => {
 		const walletId = this.getBalanceSchema.parse(req.params.id);
@@ -21,7 +21,7 @@ export class WalletController {
 		return res.json({ balance });
 	};
 
-	private debitSchema = z.object({
+	private readonly debitSchema = z.object({
 		walletId: z.uuid(),
 		amount: z.number().min(0.01),
 	});
@@ -37,7 +37,7 @@ export class WalletController {
 		return res.status(200).json({ balance });
 	};
 
-	private creditSchema = z.object({
+	private readonly creditSchema = z.object({
 		walletId: z.uuid(),
 		amount: z.number().min(0.01),
 	});
