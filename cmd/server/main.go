@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 func main() {
-	fmt.Println("Hello, world!")
+	server := createServer()
+	if err := http.ListenAndServe(":8080", server); err != nil {
+		fmt.Printf("Server failed: %s\n", err)
+	}
 }
