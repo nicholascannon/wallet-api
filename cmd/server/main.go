@@ -11,10 +11,9 @@ import (
 
 func main() {
 	router := gin.Default()
-	v1 := router.Group("/v1")
 
-	wc := controllers.NewWalletController()
-	wc.RegisterRoutes(v1)
+	v1 := router.Group("/v1")
+	controllers.RegisterControllers(v1)
 
 	port := os.Getenv("PORT")
 	if port == "" {
