@@ -6,18 +6,21 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nicholascannon/wallet-api/internal/controllers"
 )
 
 func main() {
 	router := gin.Default()
+	v1 := router.Group("/v1")
 
-	router.GET("/hello", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "world"})
-	})
+	wc := controllers.NewWalletController()
+	wc.RegisterRoutes(v1)
 
-	port := ":" + os.Getenv("PORT")
-
-	if err := http.ListenAndServe(port, router); err != nil {
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := http.ListenAndServe(":"+port, router); err != nil {
 		fmt.Printf("Server failed: %s\n", err)
 	}
 }
