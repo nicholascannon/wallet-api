@@ -6,8 +6,9 @@ import {
 } from 'express';
 import * as z from 'zod';
 import type { WalletService } from '../services/wallet/wallet-service.js';
+import type { Controller } from './controller.js';
 
-export class WalletController {
+export class WalletController implements Controller {
 	public readonly router: Router;
 
 	constructor(private readonly walletService: WalletService) {
