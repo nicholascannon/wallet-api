@@ -1,4 +1,5 @@
 import { LOGGER } from '../../lib/logger.js';
+import { WalletNotFoundError } from './errors.js';
 import type { WalletRepository } from './repository.js';
 import { credit, debit } from './wallet-operations.js';
 
@@ -15,7 +16,7 @@ export class WalletService {
 		amount: number,
 	): Promise<{ balance: number }> {
 		const balance = await this.repo.getBalance(walletId);
-		if (!balance) throw new Error('Wallet not found'); // custom error?
+		if (!balance) throw new WalletNotFoundError(walletId);
 
 		const debitedBalance = debit({ balance, amount });
 		await this.repo.updateBalance(walletId, debitedBalance);

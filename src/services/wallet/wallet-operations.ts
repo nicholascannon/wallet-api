@@ -1,4 +1,5 @@
 import { Decimal } from 'decimal.js';
+import { InsufficientFundsError, InvalidDebitAmountError } from './errors.js';
 
 export function debit(transaction: {
 	balance: number;
@@ -7,10 +8,9 @@ export function debit(transaction: {
 	const balance = new Decimal(transaction.balance);
 	const amount = new Decimal(transaction.amount);
 
-	if (amount.lessThan(0))
-		throw new Error(`Debit amount cannot be less than 0: ${amount.toNumber()}`);
+	if (amount.lessThan(0)) throw new InvalidDebitAmountError(amount.toNumber());
 	if (amount.greaterThan(balance)) {
-		throw new Error('Insufficient funds'); // TODO: Create custom error class
+		throw new InsufficientFundsError(balance.toNumber(), amount.toNumber());
 	}
 
 	return balance.minus(amount).toNumber();

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WalletMemoryRepo } from '../../../data/repositories/wallet-memory-repo.js';
+import { WalletNotFoundError } from '../errors.js';
 import { WalletService } from '../wallet-service.js';
 
 describe('WalletService', () => {
@@ -28,7 +29,7 @@ describe('WalletService', () => {
 	describe('debit', () => {
 		it('throws an error if the wallet does not exist', async () => {
 			await expect(service.debit(WALLET_ID, 10)).rejects.toThrow(
-				'Wallet not found',
+				WalletNotFoundError,
 			);
 		});
 

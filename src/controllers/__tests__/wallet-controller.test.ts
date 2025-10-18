@@ -99,7 +99,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/debit`)
 				.send({ amount: 10 });
 			expect(res.status).toBe(400);
-			expect(res.body).toHaveProperty('message', 'Insufficient funds');
+			expect(res.body.message).toContain('Insufficient funds');
 		});
 
 		it('returns 404 and message for wallet not found', async () => {
@@ -109,7 +109,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${nonExistentId}/debit`)
 				.send({ amount: 10 });
 			expect(res.status).toBe(404);
-			expect(res.body).toHaveProperty('message', 'Wallet not found');
+			expect(res.body.message).toContain('Wallet not found');
 		});
 
 		it('returns 400 for invalid wallet id', async () => {

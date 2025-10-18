@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { InsufficientFundsError, InvalidDebitAmountError } from '../errors.js';
 import { credit, debit } from '../wallet-operations.js';
 
 describe('Wallet operations', () => {
@@ -45,7 +46,9 @@ describe('Wallet operations', () => {
 		});
 
 		it('should throw if amount is negative', () => {
-			expect(() => debit({ balance: 100, amount: -10 })).toThrow();
+			expect(() => debit({ balance: 100, amount: -10 })).toThrow(
+				InvalidDebitAmountError,
+			);
 		});
 
 		it('should handle floating point precision', () => {
@@ -64,7 +67,7 @@ describe('Wallet operations', () => {
 
 		it('should throw if amount is greater than balance', () => {
 			expect(() => debit({ balance: 100, amount: 200 })).toThrow(
-				'Insufficient funds',
+				InsufficientFundsError,
 			);
 		});
 	});

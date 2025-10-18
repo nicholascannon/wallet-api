@@ -5,6 +5,10 @@ import {
 	Router,
 } from 'express';
 import * as z from 'zod';
+import {
+	InsufficientFundsError,
+	WalletNotFoundError,
+} from '../services/wallet/errors.js';
 import type { WalletService } from '../services/wallet/wallet-service.js';
 import type { Controller } from './controller.js';
 
@@ -20,10 +24,10 @@ export class WalletController implements Controller {
 	}
 
 	private errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
-		if (error instanceof Error && error.message === 'Insufficient funds') {
+		if (error instanceof InsufficientFundsError) {
 			return res.status(400).json({ message: error.message });
 		}
-		if (error instanceof Error && error.message === 'Wallet not found') {
+		if (error instanceof WalletNotFoundError) {
 			return res.status(404).json({ message: error.message });
 		}
 
