@@ -1,10 +1,8 @@
 import type { Application } from 'express';
 import request from 'supertest';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../../app.js';
 import { WalletMemoryRepo } from '../../data/repositories/wallet-memory-repo.js';
-
-vi.mock('../../lib/logger.js'); // silence logger during tests
 
 describe('WalletController', () => {
 	let app: Application;
