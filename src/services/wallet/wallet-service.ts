@@ -1,40 +1,108 @@
 import { LOGGER } from '../../lib/logger.js';
-import { WalletNotFoundError } from './errors.js';
+import { InvalidDebitAmountError, WalletNotFoundError } from './errors.js';
 import type { WalletRepository } from './repository.js';
+import type { Wallet } from './types.js';
 import { credit, debit } from './wallet-operations.js';
 
 export class WalletService {
 	constructor(private readonly repo: WalletRepository) {}
 
 	public async getBalance(walletId: string): Promise<number> {
-		const balance = await this.repo.getBalance(walletId);
-		return balance ?? 0;
+		const wallet = await this.repo.getWallet(walletId);
+		return wallet?.balance ?? 0;
 	}
 
 	public async debit(
 		walletId: string,
 		amount: number,
 	): Promise<{ balance: number }> {
-		const balance = await this.repo.getBalance(walletId);
-		if (!balance) throw new WalletNotFoundError(walletId);
+		if (amount < 0) {
+			throw new InvalidDebitAmountError(amount);
+		}
 
-		const debitedBalance = debit({ balance, amount });
-		await this.repo.updateBalance(walletId, debitedBalance);
+		return this.withRetry(async () => {
+			const wallet = await this.repo.getWallet(walletId);
+			if (!wallet) {
+				throw new WalletNotFoundError(walletId);
+			}
 
-		return { balance: debitedBalance };
+			const newBalance = debit({ balance: wallet.balance, amount });
+			const updatedWallet: Wallet = {
+				...wallet,
+				balance: newBalance,
+				version: wallet.version + 1,
+				updated: new Date(),
+			};
+
+			await this.repo.upsertWallet(updatedWallet);
+			return { balance: newBalance };
+		});
 	}
 
 	public async credit(
 		walletId: string,
 		amount: number,
 	): Promise<{ created: boolean; balance: number }> {
-		const balance = await this.repo.getBalance(walletId);
+		return this.withRetry(async () => {
+			const wallet = await this.repo.getWallet(walletId);
+			const created = !wallet;
 
-		const creditedBalance = credit({ balance: balance || 0, amount });
-		await this.repo.updateBalance(walletId, creditedBalance);
+			const baseWallet: Wallet = wallet || {
+				id: walletId,
+				balance: 0,
+				version: 0,
+				created: new Date(),
+				updated: new Date(),
+			};
 
-		if (!balance) LOGGER.info('Created new wallet', { walletId });
+			const newBalance = credit({ balance: baseWallet.balance, amount });
 
-		return { created: !balance, balance: creditedBalance };
+			await this.repo.upsertWallet({
+				...baseWallet,
+				balance: newBalance,
+				version: baseWallet.version + 1,
+				updated: new Date(),
+			});
+
+			if (created) {
+				LOGGER.info('Created new wallet', { walletId });
+			}
+
+			return { balance: newBalance, created };
+		});
+	}
+
+	private async withRetry<T>(
+		operation: () => Promise<T>,
+		maxRetries: number = 3,
+	): Promise<T> {
+		let lastError: Error | undefined;
+
+		for (let attempt = 0; attempt <= maxRetries; attempt++) {
+			try {
+				return await operation();
+			} catch (error) {
+				lastError = error as Error;
+
+				// Check if it's a concurrency conflict
+				if (
+					error instanceof Error &&
+					error.message.includes('modified by another transaction')
+				) {
+					if (attempt < maxRetries) {
+						// Wait a bit before retrying (exponential backoff)
+						await new Promise((resolve) =>
+							setTimeout(resolve, 2 ** attempt * 10),
+						);
+						continue;
+					}
+				}
+
+				// If it's not a concurrency error or we've exhausted retries, re-throw
+				throw error;
+			}
+		}
+
+		throw lastError;
 	}
 }

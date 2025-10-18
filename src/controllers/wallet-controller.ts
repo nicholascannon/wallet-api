@@ -7,6 +7,7 @@ import {
 import * as z from 'zod';
 import {
 	InsufficientFundsError,
+	InvalidDebitAmountError,
 	WalletNotFoundError,
 } from '../services/wallet/errors.js';
 import type { WalletService } from '../services/wallet/wallet-service.js';
@@ -25,6 +26,9 @@ export class WalletController implements Controller {
 
 	private errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
 		if (error instanceof InsufficientFundsError) {
+			return res.status(400).json({ message: error.message });
+		}
+		if (error instanceof InvalidDebitAmountError) {
 			return res.status(400).json({ message: error.message });
 		}
 		if (error instanceof WalletNotFoundError) {

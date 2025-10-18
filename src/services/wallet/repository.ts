@@ -1,4 +1,6 @@
+import type { Wallet } from './types.js';
+
 export interface WalletRepository {
-	getBalance(walletId: string): Promise<number | undefined>;
-	updateBalance(walletId: string, amount: number): Promise<void>;
+	getWallet(walletId: string): Promise<Wallet | undefined>;
+	upsertWallet(wallet: Wallet): Promise<void>;
 }

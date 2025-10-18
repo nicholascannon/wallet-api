@@ -1,5 +1,5 @@
 {
-  "id": "64c6c928-0ee0-43de-bcf2-ba88291110ab",
+  "id": "4d06ccfe-5866-4fa1-bb13-a8a3ceb05c61",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -20,12 +20,42 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'0'"
+        },
+        "created": {
+          "name": "created",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated": {
+          "name": "updated",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "version": {
+          "name": "version",
+          "type": "numeric(20, 0)",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'0'"
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "wallet_id_version_unique": {
+          "name": "wallet_id_version_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "version"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -1,5 +1,5 @@
-import type { Router } from "express";
+import type { Router } from 'express';
 
 export interface Controller {
-  router: Router;
+	router: Router;
 }

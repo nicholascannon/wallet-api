@@ -20,7 +20,15 @@ describe('WalletService', () => {
 		});
 
 		it('returns the correct balance for an existing wallet', async () => {
-			await repo.updateBalance(WALLET_ID, 42);
+			const wallet = {
+				id: WALLET_ID,
+				balance: 42,
+				version: 1,
+				created: new Date(),
+				updated: new Date(),
+			};
+			await repo.upsertWallet(wallet);
+
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(42);
 		});
@@ -34,10 +42,18 @@ describe('WalletService', () => {
 		});
 
 		it('debits the wallet and returns the new balance', async () => {
-			await repo.updateBalance(WALLET_ID, 100);
+			const wallet = {
+				id: WALLET_ID,
+				balance: 100,
+				version: 1,
+				created: new Date(),
+				updated: new Date(),
+			};
+			await repo.upsertWallet(wallet);
+
 			const result = await service.debit(WALLET_ID, 30);
 			expect(result.balance).toBe(70);
-			const balance = await repo.getBalance(WALLET_ID);
+			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(70);
 		});
 	});
@@ -47,16 +63,24 @@ describe('WalletService', () => {
 			const result = await service.credit(WALLET_ID, 50);
 			expect(result.created).toBe(true);
 			expect(result.balance).toBe(50);
-			const balance = await repo.getBalance(WALLET_ID);
+			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(50);
 		});
 
 		it('credits an existing wallet and returns the new balance', async () => {
-			await repo.updateBalance(WALLET_ID, 20);
+			const wallet = {
+				id: WALLET_ID,
+				balance: 20,
+				version: 1,
+				created: new Date(),
+				updated: new Date(),
+			};
+			await repo.upsertWallet(wallet);
+
 			const result = await service.credit(WALLET_ID, 15);
 			expect(result.created).toBe(false);
 			expect(result.balance).toBe(35);
-			const balance = await repo.getBalance(WALLET_ID);
+			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(35);
 		});
 	});
