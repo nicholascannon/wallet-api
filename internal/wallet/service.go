@@ -1,4 +1,4 @@
-package service
+package wallet
 
 import (
 	"errors"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nicholascannon/wallet-api/internal/models"
-	"github.com/nicholascannon/wallet-api/internal/repository"
 	"gorm.io/gorm"
 )
 
@@ -17,12 +16,12 @@ var (
 	ErrWalletNotFound    = errors.New("wallet not found")
 )
 
-type WalletService struct {
-	walletRepo *repository.WalletRepository
+type Service struct {
+	walletRepo *Repository
 }
 
-func NewWalletService(walletRepo *repository.WalletRepository) *WalletService {
-	return &WalletService{
+func newService(walletRepo *Repository) *Service {
+	return &Service{
 		walletRepo: walletRepo,
 	}
 }
@@ -40,8 +39,8 @@ func isOptimisticLockError(err error) bool {
 }
 
 // GetWallet retrieves wallet by ID, creating wallet if it doesn't exist
-func (ws *WalletService) GetWallet(id uuid.UUID) (*models.Wallet, error) {
-	wallet, err := ws.walletRepo.GetByID(id)
+func (s *Service) GetWallet(id uuid.UUID) (*models.Wallet, error) {
+	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// Default wallet with zero balance if it doesn't exist
 		wallet = &models.Wallet{ID: id, Balance: 0, Version: 0}
@@ -53,8 +52,8 @@ func (ws *WalletService) GetWallet(id uuid.UUID) (*models.Wallet, error) {
 }
 
 // Credit adds money to a wallet
-func (ws *WalletService) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
-	wallet, err := ws.walletRepo.GetByID(id)
+func (s *Service) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
+	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// Create wallet with zero balance if it doesn't exist
 		wallet = &models.Wallet{ID: id, Balance: 0, Version: 0}
@@ -65,7 +64,7 @@ func (ws *WalletService) Credit(id uuid.UUID, amount float64) (*models.Wallet, e
 	wallet.Balance += amount
 	wallet.Version++
 
-	if err := ws.walletRepo.UpdateWallet(wallet); err != nil {
+	if err := s.walletRepo.UpdateWallet(wallet); err != nil {
 		if isOptimisticLockError(err) {
 			return nil, ErrOptimisticLock
 		}
@@ -76,8 +75,8 @@ func (ws *WalletService) Credit(id uuid.UUID, amount float64) (*models.Wallet, e
 }
 
 // Debit subtracts money from a wallet
-func (ws *WalletService) Debit(id uuid.UUID, amount float64) (*models.Wallet, error) {
-	wallet, err := ws.walletRepo.GetByID(id)
+func (s *Service) Debit(id uuid.UUID, amount float64) (*models.Wallet, error) {
+	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, ErrWalletNotFound
 	} else if err != nil {
@@ -91,7 +90,7 @@ func (ws *WalletService) Debit(id uuid.UUID, amount float64) (*models.Wallet, er
 	wallet.Balance -= amount
 	wallet.Version++
 
-	if err := ws.walletRepo.UpdateWallet(wallet); err != nil {
+	if err := s.walletRepo.UpdateWallet(wallet); err != nil {
 		if isOptimisticLockError(err) {
 			return nil, ErrOptimisticLock
 		}

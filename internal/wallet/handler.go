@@ -1,4 +1,4 @@
-package controllers
+package wallet
 
 import (
 	"errors"
@@ -6,29 +6,28 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/nicholascannon/wallet-api/internal/service"
 )
 
-type WalletController struct {
-	walletService *service.WalletService
+type Handler struct {
+	walletService *Service
 }
 
 type requestBody struct {
 	Amount float64 `json:"amount" binding:"required,gt=0"`
 }
 
-func NewWalletController(walletService *service.WalletService) *WalletController {
-	return &WalletController{
+func newHandler(walletService *Service) *Handler {
+	return &Handler{
 		walletService: walletService,
 	}
 }
 
-func (wc *WalletController) RegisterRoutes(router *gin.RouterGroup) {
+func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
 	w := router.Group("/wallet")
 
-	w.GET("/:id", wc.GetBalance)
-	w.POST("/:id/credit", wc.Credit)
-	w.POST("/:id/debit", wc.Debit)
+	w.GET("/:id", h.GetBalance)
+	w.POST("/:id/credit", h.Credit)
+	w.POST("/:id/debit", h.Debit)
 }
 
 // parseWalletID extracts and validates wallet ID from URL params
@@ -49,11 +48,11 @@ func parseWalletID(c *gin.Context) (uuid.UUID, error) {
 // handleServiceError maps service errors to appropriate HTTP responses
 func handleServiceError(c *gin.Context, err error) {
 	switch err {
-	case service.ErrInsufficientFunds:
+	case ErrInsufficientFunds:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient funds"})
-	case service.ErrOptimisticLock:
+	case ErrOptimisticLock:
 		c.JSON(http.StatusConflict, gin.H{"error": "Wallet has been modified by another process, please retry"})
-	case service.ErrWalletNotFound:
+	case ErrWalletNotFound:
 		c.JSON(http.StatusNotFound, gin.H{"error": "Wallet not found"})
 	default:
 		panic(err)
@@ -61,14 +60,14 @@ func handleServiceError(c *gin.Context, err error) {
 }
 
 // GetBalance retrieves wallet balance by ID
-func (wc *WalletController) GetBalance(c *gin.Context) {
+func (h *Handler) GetBalance(c *gin.Context) {
 	id, err := parseWalletID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	wallet, err := wc.walletService.GetWallet(id)
+	wallet, err := h.walletService.GetWallet(id)
 	if err != nil {
 		handleServiceError(c, err)
 		return
@@ -80,7 +79,7 @@ func (wc *WalletController) GetBalance(c *gin.Context) {
 }
 
 // Credit adds money to a wallet
-func (wc *WalletController) Credit(c *gin.Context) {
+func (h *Handler) Credit(c *gin.Context) {
 	id, err := parseWalletID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -93,7 +92,7 @@ func (wc *WalletController) Credit(c *gin.Context) {
 		return
 	}
 
-	wallet, err := wc.walletService.Credit(id, request.Amount)
+	wallet, err := h.walletService.Credit(id, request.Amount)
 	if err != nil {
 		handleServiceError(c, err)
 		return
@@ -105,7 +104,7 @@ func (wc *WalletController) Credit(c *gin.Context) {
 }
 
 // Debit subtracts money from a wallet
-func (wc *WalletController) Debit(c *gin.Context) {
+func (h *Handler) Debit(c *gin.Context) {
 	id, err := parseWalletID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -118,7 +117,7 @@ func (wc *WalletController) Debit(c *gin.Context) {
 		return
 	}
 
-	wallet, err := wc.walletService.Debit(id, request.Amount)
+	wallet, err := h.walletService.Debit(id, request.Amount)
 	if err != nil {
 		handleServiceError(c, err)
 		return
