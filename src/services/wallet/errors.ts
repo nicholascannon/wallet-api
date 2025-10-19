@@ -20,3 +20,12 @@ export class InvalidDebitAmountError extends Error {
 		this.name = 'InvalidDebitAmountError';
 	}
 }
+
+export class ConcurrentModificationError extends Error {
+	constructor(walletId: string) {
+		super(
+			`Wallet ${walletId} was modified by another transaction. Please retry.`,
+		);
+		this.name = 'ConcurrentModificationError';
+	}
+}

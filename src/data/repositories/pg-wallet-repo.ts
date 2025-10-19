@@ -1,5 +1,7 @@
 import { eq } from 'drizzle-orm';
+import { DrizzleQueryError } from 'drizzle-orm/errors';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { ConcurrentModificationError } from '../../services/wallet/errors.js';
 import type { WalletRepository } from '../../services/wallet/repository.js';
 import type { Wallet } from '../../services/wallet/types.js';
 import { walletTable } from '../schema.js';
@@ -47,13 +49,16 @@ export class PgWalletRepo implements WalletRepository {
 				});
 		} catch (error) {
 			// Check if it's a unique constraint violation (stale version)
-			if (
-				error instanceof Error &&
-				error.message.includes('unique constraint')
-			) {
-				throw new Error(
-					'Wallet was modified by another transaction. Please retry.',
-				);
+			if (error instanceof DrizzleQueryError) {
+				const cause = error.cause;
+				if (
+					cause &&
+					typeof cause === 'object' &&
+					'code' in cause &&
+					cause.code === '23505'
+				) {
+					throw new ConcurrentModificationError(wallet.id);
+				}
 			}
 			throw error;
 		}

@@ -1,5 +1,9 @@
 import { LOGGER } from '../../lib/logger.js';
-import { InvalidDebitAmountError, WalletNotFoundError } from './errors.js';
+import {
+	ConcurrentModificationError,
+	InvalidDebitAmountError,
+	WalletNotFoundError,
+} from './errors.js';
 import type { WalletRepository } from './repository.js';
 import type { Wallet } from './types.js';
 import { credit, debit } from './wallet-operations.js';
@@ -83,21 +87,15 @@ export class WalletService {
 			} catch (error) {
 				lastError = error as Error;
 
-				// Check if it's a concurrency conflict
-				if (
-					error instanceof Error &&
-					error.message.includes('modified by another transaction')
-				) {
+				if (error instanceof ConcurrentModificationError) {
 					if (attempt < maxRetries) {
-						// Wait a bit before retrying (exponential backoff)
-						await new Promise((resolve) =>
-							setTimeout(resolve, 2 ** attempt * 10),
+						await new Promise(
+							(resolve) => setTimeout(resolve, 2 ** attempt * 10), // exponential backoff
 						);
 						continue;
 					}
 				}
 
-				// If it's not a concurrency error or we've exhausted retries, re-throw
 				throw error;
 			}
 		}
