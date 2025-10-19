@@ -74,11 +74,11 @@ export class WalletController implements Controller {
 			amount: req.body.amount,
 		});
 
-		const { balance, created } = await this.walletService.credit(
+		const { wallet, created } = await this.walletService.credit(
 			walletId,
 			amount,
 		);
 
-		return res.status(created ? 201 : 200).json({ balance });
+		return res.status(created ? 201 : 200).json({ balance: wallet.balance });
 	};
 }

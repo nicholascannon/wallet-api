@@ -12,10 +12,7 @@ export class WalletService {
 		return wallet?.balance ?? 0;
 	}
 
-	public async debit(
-		walletId: string,
-		amount: number,
-	): Promise<{ balance: number }> {
+	public async debit(walletId: string, amount: number): Promise<Wallet> {
 		if (amount < 0) {
 			throw new InvalidDebitAmountError(amount);
 		}
@@ -35,14 +32,14 @@ export class WalletService {
 			};
 
 			await this.repo.upsertWallet(updatedWallet);
-			return { balance: newBalance };
+			return updatedWallet;
 		});
 	}
 
 	public async credit(
 		walletId: string,
 		amount: number,
-	): Promise<{ created: boolean; balance: number }> {
+	): Promise<{ created: boolean; wallet: Wallet }> {
 		return this.withRetry(async () => {
 			const wallet = await this.repo.getWallet(walletId);
 			const created = !wallet;
@@ -57,18 +54,20 @@ export class WalletService {
 
 			const newBalance = credit({ balance: baseWallet.balance, amount });
 
-			await this.repo.upsertWallet({
+			const updatedWallet: Wallet = {
 				...baseWallet,
 				balance: newBalance,
 				version: baseWallet.version + 1,
 				updated: new Date(),
-			});
+			};
+
+			await this.repo.upsertWallet(updatedWallet);
 
 			if (created) {
 				LOGGER.info('Created new wallet', { walletId });
 			}
 
-			return { balance: newBalance, created };
+			return { wallet: updatedWallet, created };
 		});
 	}
 

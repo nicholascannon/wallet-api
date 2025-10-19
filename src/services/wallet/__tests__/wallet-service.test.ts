@@ -53,6 +53,8 @@ describe('WalletService', () => {
 
 			const result = await service.debit(WALLET_ID, 30);
 			expect(result.balance).toBe(70);
+			expect(result.version).toBe(2);
+			expect(result.id).toBe(WALLET_ID);
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(70);
 		});
@@ -62,7 +64,9 @@ describe('WalletService', () => {
 		it('creates a new wallet if it does not exist and credits the amount', async () => {
 			const result = await service.credit(WALLET_ID, 50);
 			expect(result.created).toBe(true);
-			expect(result.balance).toBe(50);
+			expect(result.wallet.balance).toBe(50);
+			expect(result.wallet.version).toBe(1);
+			expect(result.wallet.id).toBe(WALLET_ID);
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(50);
 		});
@@ -79,7 +83,9 @@ describe('WalletService', () => {
 
 			const result = await service.credit(WALLET_ID, 15);
 			expect(result.created).toBe(false);
-			expect(result.balance).toBe(35);
+			expect(result.wallet.balance).toBe(35);
+			expect(result.wallet.version).toBe(2);
+			expect(result.wallet.id).toBe(WALLET_ID);
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(35);
 		});
