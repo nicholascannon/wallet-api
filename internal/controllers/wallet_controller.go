@@ -3,38 +3,23 @@ package controllers
 import (
 	"errors"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/nicholascannon/wallet-api/internal/models"
-	"github.com/nicholascannon/wallet-api/internal/repository"
-	"gorm.io/gorm"
+	"github.com/nicholascannon/wallet-api/internal/service"
 )
 
 type WalletController struct {
-	walletRepo *repository.WalletRepository
+	walletService *service.WalletService
 }
 
 type requestBody struct {
 	Amount float64 `json:"amount" binding:"required,gt=0"`
 }
 
-// isOptimisticLockError checks if the error is due to optimistic locking conflict
-func isOptimisticLockError(err error) bool {
-	if err == nil {
-		return false
-	}
-
-	// Check if it's a unique constraint violation on our specific index
-	errStr := err.Error()
-	return strings.Contains(errStr, "duplicate key value violates unique constraint") &&
-		strings.Contains(errStr, "idx_wallet_id_version")
-}
-
-func NewWalletController() *WalletController {
+func NewWalletController(walletService *service.WalletService) *WalletController {
 	return &WalletController{
-		walletRepo: repository.NewWalletRepository(),
+		walletService: walletService,
 	}
 }
 
@@ -46,27 +31,47 @@ func (wc *WalletController) RegisterRoutes(router *gin.RouterGroup) {
 	w.POST("/:id/debit", wc.Debit)
 }
 
-// GetBalance retrieves wallet balance by ID
-func (wc *WalletController) GetBalance(c *gin.Context) {
+// parseWalletID extracts and validates wallet ID from URL params
+func parseWalletID(c *gin.Context) (uuid.UUID, error) {
 	idStr, exists := c.Params.Get("id")
 	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Wallet ID is required"})
-		return
+		return uuid.Nil, errors.New("wallet ID is required")
 	}
 
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wallet ID format"})
+		return uuid.Nil, errors.New("invalid wallet ID format")
+	}
+
+	return id, nil
+}
+
+// handleServiceError maps service errors to appropriate HTTP responses
+func handleServiceError(c *gin.Context, err error) {
+	switch err {
+	case service.ErrInsufficientFunds:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient funds"})
+	case service.ErrOptimisticLock:
+		c.JSON(http.StatusConflict, gin.H{"error": "Wallet has been modified by another process, please retry"})
+	case service.ErrWalletNotFound:
+		c.JSON(http.StatusNotFound, gin.H{"error": "Wallet not found"})
+	default:
+		panic(err)
+	}
+}
+
+// GetBalance retrieves wallet balance by ID
+func (wc *WalletController) GetBalance(c *gin.Context) {
+	id, err := parseWalletID(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	wallet, err := wc.walletRepo.GetByID(id)
+	wallet, err := wc.walletService.GetWallet(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			wallet = &models.Wallet{ID: id, Balance: 0, Version: 0}
-		} else {
-			panic(err)
-		}
+		handleServiceError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -76,15 +81,9 @@ func (wc *WalletController) GetBalance(c *gin.Context) {
 
 // Credit adds money to a wallet
 func (wc *WalletController) Credit(c *gin.Context) {
-	idStr, exists := c.Params.Get("id")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Wallet ID is required"})
-		return
-	}
-
-	id, err := uuid.Parse(idStr)
+	id, err := parseWalletID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wallet ID format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -94,25 +93,10 @@ func (wc *WalletController) Credit(c *gin.Context) {
 		return
 	}
 
-	wallet, err := wc.walletRepo.GetByID(id)
+	wallet, err := wc.walletService.Credit(id, request.Amount)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			wallet = &models.Wallet{ID: id, Balance: 0, Version: 0}
-		} else {
-			panic(err)
-		}
-	}
-
-	wallet.Balance += request.Amount
-	wallet.Version++
-
-	if err := wc.walletRepo.UpdateWallet(wallet); err != nil {
-		if isOptimisticLockError(err) {
-			c.JSON(http.StatusConflict, gin.H{"error": "Wallet has been modified by another process, please retry"})
-			return
-		} else {
-			panic(err)
-		}
+		handleServiceError(c, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -122,15 +106,9 @@ func (wc *WalletController) Credit(c *gin.Context) {
 
 // Debit subtracts money from a wallet
 func (wc *WalletController) Debit(c *gin.Context) {
-	idStr, exists := c.Params.Get("id")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Wallet ID is required"})
-		return
-	}
-
-	id, err := uuid.Parse(idStr)
+	id, err := parseWalletID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid wallet ID format"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -140,31 +118,10 @@ func (wc *WalletController) Debit(c *gin.Context) {
 		return
 	}
 
-	wallet, err := wc.walletRepo.GetByID(id)
+	wallet, err := wc.walletService.Debit(id, request.Amount)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Wallet not found"})
-			return
-		} else {
-			panic(err)
-		}
-	}
-
-	if wallet.Balance < request.Amount {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient funds"})
+		handleServiceError(c, err)
 		return
-	}
-
-	wallet.Balance -= request.Amount
-	wallet.Version++
-
-	if err := wc.walletRepo.UpdateWallet(wallet); err != nil {
-		if isOptimisticLockError(err) {
-			c.JSON(http.StatusConflict, gin.H{"error": "Wallet has been modified by another process, please retry"})
-			return
-		} else {
-			panic(err)
-		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{

@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nicholascannon/wallet-api/internal/controllers"
 	"github.com/nicholascannon/wallet-api/internal/database"
+	"github.com/nicholascannon/wallet-api/internal/repository"
+	"github.com/nicholascannon/wallet-api/internal/service"
 )
 
 func main() {
@@ -17,8 +19,12 @@ func main() {
 
 	router := gin.Default()
 
+	walletRepo := repository.NewWalletRepository()
+	walletService := service.NewWalletService(walletRepo)
+	walletController := controllers.NewWalletController(walletService)
+
 	v1 := router.Group("/v1")
-	controllers.NewWalletController().RegisterRoutes(v1)
+	walletController.RegisterRoutes(v1)
 
 	port := os.Getenv("PORT")
 	if port == "" {
