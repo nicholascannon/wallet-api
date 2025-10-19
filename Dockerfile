@@ -7,7 +7,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
 
-FROM alpine:latest AS runtime
+FROM alpine:3.19 AS runtime
 WORKDIR /app
 
 RUN addgroup -g 1001 -S appgroup && \
