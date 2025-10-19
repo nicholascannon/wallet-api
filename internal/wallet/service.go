@@ -11,17 +11,17 @@ import (
 
 // Service-level errors
 var (
-	ErrInsufficientFunds = errors.New("insufficient funds")
-	ErrOptimisticLock    = errors.New("wallet has been modified by another process")
-	ErrWalletNotFound    = errors.New("wallet not found")
+	errInsufficientFunds = errors.New("insufficient funds")
+	errOptimisticLock    = errors.New("wallet has been modified by another process")
+	errWalletNotFound    = errors.New("wallet not found")
 )
 
-type Service struct {
-	walletRepo *Repository
+type service struct {
+	walletRepo *repository
 }
 
-func newService(walletRepo *Repository) *Service {
-	return &Service{
+func newService(walletRepo *repository) *service {
+	return &service{
 		walletRepo: walletRepo,
 	}
 }
@@ -39,7 +39,7 @@ func isOptimisticLockError(err error) bool {
 }
 
 // GetWallet retrieves wallet by ID, creating wallet if it doesn't exist
-func (s *Service) GetWallet(id uuid.UUID) (*models.Wallet, error) {
+func (s *service) GetWallet(id uuid.UUID) (*models.Wallet, error) {
 	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// Default wallet with zero balance if it doesn't exist
@@ -52,7 +52,7 @@ func (s *Service) GetWallet(id uuid.UUID) (*models.Wallet, error) {
 }
 
 // Credit adds money to a wallet
-func (s *Service) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
+func (s *service) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
 	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// Create wallet with zero balance if it doesn't exist
@@ -66,7 +66,7 @@ func (s *Service) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
 
 	if err := s.walletRepo.UpdateWallet(wallet); err != nil {
 		if isOptimisticLockError(err) {
-			return nil, ErrOptimisticLock
+			return nil, errOptimisticLock
 		}
 		return nil, err
 	}
@@ -75,16 +75,16 @@ func (s *Service) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
 }
 
 // Debit subtracts money from a wallet
-func (s *Service) Debit(id uuid.UUID, amount float64) (*models.Wallet, error) {
+func (s *service) Debit(id uuid.UUID, amount float64) (*models.Wallet, error) {
 	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, ErrWalletNotFound
+		return nil, errWalletNotFound
 	} else if err != nil {
 		return nil, err
 	}
 
 	if wallet.Balance < amount {
-		return nil, ErrInsufficientFunds
+		return nil, errInsufficientFunds
 	}
 
 	wallet.Balance -= amount
@@ -92,7 +92,7 @@ func (s *Service) Debit(id uuid.UUID, amount float64) (*models.Wallet, error) {
 
 	if err := s.walletRepo.UpdateWallet(wallet); err != nil {
 		if isOptimisticLockError(err) {
-			return nil, ErrOptimisticLock
+			return nil, errOptimisticLock
 		}
 		return nil, err
 	}

@@ -8,21 +8,21 @@ import (
 	"github.com/google/uuid"
 )
 
-type Handler struct {
-	walletService *Service
+type handler struct {
+	walletService *service
 }
 
 type requestBody struct {
 	Amount float64 `json:"amount" binding:"required,gt=0"`
 }
 
-func newHandler(walletService *Service) *Handler {
-	return &Handler{
+func newHandler(walletService *service) *handler {
+	return &handler{
 		walletService: walletService,
 	}
 }
 
-func (h *Handler) RegisterRoutes(router *gin.RouterGroup) {
+func (h *handler) RegisterRoutes(router *gin.RouterGroup) {
 	w := router.Group("/wallet")
 
 	w.GET("/:id", h.GetBalance)
@@ -48,11 +48,11 @@ func parseWalletID(c *gin.Context) (uuid.UUID, error) {
 // handleServiceError maps service errors to appropriate HTTP responses
 func handleServiceError(c *gin.Context, err error) {
 	switch err {
-	case ErrInsufficientFunds:
+	case errInsufficientFunds:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Insufficient funds"})
-	case ErrOptimisticLock:
+	case errOptimisticLock:
 		c.JSON(http.StatusConflict, gin.H{"error": "Wallet has been modified by another process, please retry"})
-	case ErrWalletNotFound:
+	case errWalletNotFound:
 		c.JSON(http.StatusNotFound, gin.H{"error": "Wallet not found"})
 	default:
 		panic(err)
@@ -60,7 +60,7 @@ func handleServiceError(c *gin.Context, err error) {
 }
 
 // GetBalance retrieves wallet balance by ID
-func (h *Handler) GetBalance(c *gin.Context) {
+func (h *handler) GetBalance(c *gin.Context) {
 	id, err := parseWalletID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -79,7 +79,7 @@ func (h *Handler) GetBalance(c *gin.Context) {
 }
 
 // Credit adds money to a wallet
-func (h *Handler) Credit(c *gin.Context) {
+func (h *handler) Credit(c *gin.Context) {
 	id, err := parseWalletID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -104,7 +104,7 @@ func (h *Handler) Credit(c *gin.Context) {
 }
 
 // Debit subtracts money from a wallet
-func (h *Handler) Debit(c *gin.Context) {
+func (h *handler) Debit(c *gin.Context) {
 	id, err := parseWalletID(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
