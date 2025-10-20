@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nicholascannon/wallet-api/internal/models"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 )
 
@@ -56,6 +57,7 @@ func (s *service) Credit(id uuid.UUID, amount float64) (*models.Wallet, error) {
 	wallet, err := s.walletRepo.GetByID(id)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		// Create wallet with zero balance if it doesn't exist
+		log.Info().Str("walletID", id.String()).Msg("Wallet not found, creating new wallet")
 		wallet = &models.Wallet{ID: id, Balance: 0, Version: 0}
 	} else if err != nil {
 		return nil, err
