@@ -13,8 +13,8 @@ export const walletTable = pgTable(
 			.$onUpdate(() => new Date()),
 		version: numeric({ precision: 20, scale: 0 }).notNull().default('0'), // For optimistic locking
 	},
-	(table) => ({
+	(table) => {
 		// Unique constraint to prevent concurrent updates with stale data
-		walletVersionUnique: unique().on(table.id, table.version),
-	}),
+		return [unique('wallet_id_version_unique').on(table.id, table.version)];
+	},
 );
