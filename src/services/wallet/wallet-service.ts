@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises';
 import { LOGGER } from '../../lib/logger.js';
 import {
 	ConcurrentModificationError,
@@ -89,9 +90,7 @@ export class WalletService {
 
 				if (error instanceof ConcurrentModificationError) {
 					if (attempt < maxRetries) {
-						await new Promise(
-							(resolve) => setTimeout(resolve, 2 ** attempt * 10), // exponential backoff
-						);
+						await setTimeout(2 ** attempt * 10); // exponential backoff
 						continue;
 					}
 				}
