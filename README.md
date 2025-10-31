@@ -9,15 +9,15 @@ Dev mode:
 
 ```bash
 cp .env.example .env
-yarn
-yarn migrate
+npm ci
+npm run db:migrate
 docker compose up -d db
-yarn dev
+npm run dev
 ```
 
 Otherwise:
 
 ```bash
 docker compose up -d
-yarn migrate
+npm run db:migrate
 ```
