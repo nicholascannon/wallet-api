@@ -17,3 +17,9 @@ node_modules/
 dist/
 
 .env
+
+# Coverage reports
+coverage/
+html/
+
+.DS_Store
