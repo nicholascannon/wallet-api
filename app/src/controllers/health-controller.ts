@@ -11,8 +11,6 @@ export class HealthController {
 
 	private health = async (_req: Request, res: Response) => {
 		const isHealthy = await this.healthCheckRepo.checkHealth();
-		return res
-			.status(isHealthy ? 200 : 500)
-			.json({ message: isHealthy ? "ok" : "error" });
+		return res.json({ service: "up", db: isHealthy ? "ok" : "error" });
 	};
 }
