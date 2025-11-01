@@ -1,16 +1,20 @@
-import type { Application } from 'express';
-import express from 'express';
-import { WalletController } from './controllers/wallet-controller.js';
-import { loggingMiddleware } from './lib/logger.js';
-import { zodErrorHandler } from './middleware/zod-error-handler.js';
-import type { WalletRepository } from './services/wallet/repository.js';
-import { WalletService } from './services/wallet/wallet-service.js';
+import type { Application } from "express";
+import express from "express";
+import { HealthController } from "./controllers/health-controller.js";
+import { WalletController } from "./controllers/wallet-controller.js";
+import type { HealthCheckRepo } from "./data/repositories/health-check-repo.js";
+import { loggingMiddleware } from "./lib/logger.js";
+import { zodErrorHandler } from "./middleware/zod-error-handler.js";
+import type { WalletRepository } from "./services/wallet/repository.js";
+import { WalletService } from "./services/wallet/wallet-service.js";
 
 export function createApp({
 	walletRepo,
+	healthCheckRepo,
 	enableLogging = true,
 }: {
 	walletRepo: WalletRepository;
+	healthCheckRepo: HealthCheckRepo;
 	enableLogging?: boolean;
 }): Application {
 	const app = express();
@@ -20,8 +24,10 @@ export function createApp({
 
 	const walletService = new WalletService(walletRepo);
 	const walletController = new WalletController(walletService);
+	const healthController = new HealthController(healthCheckRepo);
 
-	app.use('/v1/wallet', walletController.router);
+	app.use("/v1/wallet", walletController.router);
+	app.use("/v1/health", healthController.router);
 
 	app.use(zodErrorHandler);
 
