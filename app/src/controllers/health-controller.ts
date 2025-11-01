@@ -1,10 +1,10 @@
 import { type Request, type Response, Router } from "express";
-import type { HealthCheckRepo } from "../data/repositories/health-check-repo.js";
+import type { HealthRepository } from "../services/health/health-repository.js";
 
 export class HealthController {
 	public readonly router: Router;
 
-	constructor(private readonly healthCheckRepo: HealthCheckRepo) {
+	constructor(private readonly healthCheckRepo: HealthRepository) {
 		this.router = Router();
 		this.router.get("/", this.health);
 	}

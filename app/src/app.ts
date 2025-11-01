@@ -2,9 +2,9 @@ import type { Application } from "express";
 import express from "express";
 import { HealthController } from "./controllers/health-controller.js";
 import { WalletController } from "./controllers/wallet-controller.js";
-import type { HealthCheckRepo } from "./data/repositories/health-check-repo.js";
 import { loggingMiddleware } from "./lib/logger.js";
 import { zodErrorHandler } from "./middleware/zod-error-handler.js";
+import type { HealthRepository } from "./services/health/health-repository.js";
 import type { WalletRepository } from "./services/wallet/repository.js";
 import { WalletService } from "./services/wallet/wallet-service.js";
 
@@ -14,7 +14,7 @@ export function createApp({
 	enableLogging = true,
 }: {
 	walletRepo: WalletRepository;
-	healthCheckRepo: HealthCheckRepo;
+	healthCheckRepo: HealthRepository;
 	enableLogging?: boolean;
 }): Application {
 	const app = express();
