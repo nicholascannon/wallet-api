@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!drizzle"]
+		"includes": ["**", "!drizzle", "!dist", "!coverage"]
 	},
 	"formatter": {
 		"enabled": true,
