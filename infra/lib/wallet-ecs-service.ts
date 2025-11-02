@@ -5,24 +5,22 @@ import type * as rds from "aws-cdk-lib/aws-rds";
 import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
 
+interface WalletEcsServiceProps {
+	readonly port: number;
+	readonly imageTag: string;
+	readonly vpc: ec2.IVpc;
+	readonly cluster: ecs.Cluster;
+	readonly containerRepository: ecr.IRepository;
+	readonly dbSecret: secretsmanager.ISecret;
+	readonly database: rds.IDatabaseInstance;
+}
+
 export class WalletEcsService extends Construct {
 	public readonly service: ecs.FargateService;
 	public readonly securityGroup: ec2.SecurityGroup;
 	public readonly port: number;
 
-	constructor(
-		scope: Construct,
-		id: string,
-		options: {
-			port: number;
-			imageTag: string;
-			vpc: ec2.IVpc;
-			cluster: ecs.Cluster;
-			containerRepository: ecr.IRepository;
-			dbSecret: secretsmanager.ISecret;
-			database: rds.IDatabaseInstance;
-		},
-	) {
+	constructor(scope: Construct, id: string, props: WalletEcsServiceProps) {
 		super(scope, id);
 		const {
 			port,
@@ -32,12 +30,12 @@ export class WalletEcsService extends Construct {
 			containerRepository,
 			dbSecret,
 			database,
-		} = options;
+		} = props;
 		this.port = port;
 
 		const taskDefinition = new ecs.FargateTaskDefinition(
 			this,
-			"WalletServiceTaskDefinition",
+			"TaskDefinition",
 			{
 				cpu: 256,
 				memoryLimitMiB: 512,
@@ -45,7 +43,7 @@ export class WalletEcsService extends Construct {
 			},
 		);
 
-		taskDefinition.addContainer("WalletServiceContainer", {
+		taskDefinition.addContainer("Container", {
 			image: ecs.ContainerImage.fromEcrRepository(
 				containerRepository,
 				imageTag,
@@ -70,16 +68,12 @@ export class WalletEcsService extends Construct {
 			},
 		});
 
-		this.securityGroup = new ec2.SecurityGroup(
-			this,
-			"WalletServiceSecurityGroup",
-			{
-				vpc,
-				description: "Allow ALB to access Wallet Service",
-			},
-		);
+		this.securityGroup = new ec2.SecurityGroup(this, "SecurityGroup", {
+			vpc,
+			description: "Allow ALB to access Wallet Service",
+		});
 
-		this.service = new ecs.FargateService(this, "WalletFargateService", {
+		this.service = new ecs.FargateService(this, "Service", {
 			serviceName: "wallet-service",
 			cluster,
 			taskDefinition,

@@ -3,24 +3,31 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
-import * as rds from "aws-cdk-lib/aws-rds";
-import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import type { Construct } from "constructs";
+import { MigrationTask } from "./migration-task";
+import { WalletDatabase } from "./wallet-database";
 import { WalletEcsService } from "./wallet-ecs-service";
 
-const IMAGE_TAG = "2fca8b0";
+export interface WalletInfraStackProps extends cdk.StackProps {
+	readonly imageTag?: string;
+	readonly vpcId?: string;
+}
 
 export class WalletInfraStack extends cdk.Stack {
 	public readonly vpc: ec2.IVpc;
 	public readonly cluster: ecs.Cluster;
 	public readonly containerRepository: ecr.IRepository;
-	public readonly database: rds.DatabaseInstance;
+	public readonly database: WalletDatabase;
 
-	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+	constructor(scope: Construct, id: string, props?: WalletInfraStackProps) {
 		super(scope, id, props);
 
+		const imageTag = props?.imageTag ?? this.node.tryGetContext("imageTag");
+		const vpcId = props?.vpcId ?? "vpc-aa8468cc";
+
+		// Network
 		this.vpc = ec2.Vpc.fromLookup(this, "Vpc", {
-			vpcId: "vpc-aa8468cc",
+			vpcId,
 		});
 		this.cluster = new ecs.Cluster(this, "Cluster", {
 			vpc: this.vpc,
@@ -28,124 +35,60 @@ export class WalletInfraStack extends cdk.Stack {
 		});
 		this.containerRepository = ecr.Repository.fromRepositoryName(
 			this,
-			"WalletServiceRepo",
+			"ContainerRepository",
 			"wallet-service",
 		);
 
-		const dbSecret = new secretsmanager.Secret(this, "DbSecret", {
-			generateSecretString: {
-				secretStringTemplate: JSON.stringify({ username: "postgres" }),
-				generateStringKey: "password",
-				passwordLength: 20,
-				excludeCharacters: " %+~`#$&*()|[]{}:;<>?!'/@\"\\",
-			},
-		});
-
-		const dbSecurityGroup = new ec2.SecurityGroup(this, "DBSecurityGroup", {
+		// Database
+		this.database = new WalletDatabase(this, "Database", {
 			vpc: this.vpc,
-			description: "Security group for Postgres database",
-			allowAllOutbound: false,
 		});
 
-		this.database = new rds.DatabaseInstance(this, "WalletDatabase", {
-			engine: rds.DatabaseInstanceEngine.postgres({
-				version: rds.PostgresEngineVersion.VER_13,
-			}),
-			instanceType: ec2.InstanceType.of(
-				ec2.InstanceClass.T3,
-				ec2.InstanceSize.MICRO,
-			),
-			vpc: this.vpc,
-			vpcSubnets: {
-				subnets: this.vpc.publicSubnets, // no private subnets in this VPC for simplicity
-			},
-			securityGroups: [dbSecurityGroup],
-			databaseName: "wallet",
-			credentials: rds.Credentials.fromSecret(dbSecret),
-			allocatedStorage: 20,
-			maxAllocatedStorage: 20,
-			storageType: rds.StorageType.GP3,
-			multiAz: false,
-			publiclyAccessible: false,
-			deletionProtection: false, // because this is a learning project
-			backupRetention: cdk.Duration.days(0), // disable backups
-		});
-
-		const walletService = new WalletEcsService(this, "WalletEcsService", {
+		// Compute
+		const walletService = new WalletEcsService(this, "WalletService", {
 			port: 8000,
-			imageTag: IMAGE_TAG,
+			imageTag,
 			vpc: this.vpc,
 			cluster: this.cluster,
 			containerRepository: this.containerRepository,
-			dbSecret,
-			database: this.database,
+			dbSecret: this.database.secret,
+			database: this.database.database,
 		});
-		dbSecurityGroup.addIngressRule(
+		this.database.securityGroup.addIngressRule(
 			walletService.securityGroup,
 			ec2.Port.tcp(5432),
 			"Allow access from Wallet Service",
 		);
 
-		const { migrationTaskDef, migrationTaskSG } =
-			this.createMigrationTaskDef(dbSecret);
-		dbSecurityGroup.addIngressRule(
-			migrationTaskSG,
+		const migrationTask = new MigrationTask(this, "MigrationTask", {
+			database: this.database.database,
+			containerRepository: this.containerRepository,
+			imageTag,
+			vpc: this.vpc,
+			dbSecret: this.database.secret,
+		});
+		this.database.securityGroup.addIngressRule(
+			migrationTask.securityGroup,
 			ec2.Port.tcp(5432),
 			"Allow access from Migration Task",
 		);
 
-		const alb = this.createALB(walletService);
+		// Load Balancing
+		const alb = this.createApplicationLoadBalancer(walletService);
 
+		// Outputs
 		new cdk.CfnOutput(this, "LoadBalancerDNS", {
 			value: alb.loadBalancerDnsName,
 		});
 		new cdk.CfnOutput(this, "MigrationTaskDefArn", {
-			value: migrationTaskDef.taskDefinitionArn,
+			value: migrationTask.taskDefinition.taskDefinitionArn,
 		});
 	}
 
-	private createMigrationTaskDef(dbSecret: secretsmanager.ISecret) {
-		const migrationTaskDef = new ecs.FargateTaskDefinition(
-			this,
-			"MigrationTaskDefinition",
-			{
-				cpu: 256,
-				memoryLimitMiB: 512,
-				family: "wallet-service-migration",
-			},
-		);
-		migrationTaskDef.addContainer("MigrationContainer", {
-			image: ecs.ContainerImage.fromEcrRepository(
-				this.containerRepository,
-				IMAGE_TAG,
-			),
-			entryPoint: ["npm", "run", "db:migrate"],
-			logging: ecs.LogDrivers.awsLogs({ streamPrefix: "WalletMigrations" }),
-			environment: {
-				DB_HOST: this.database.instanceEndpoint.hostname,
-				DB_PORT: this.database.instanceEndpoint.port.toString(),
-			},
-			secrets: {
-				DB_NAME: ecs.Secret.fromSecretsManager(dbSecret, "dbname"),
-				DB_USERNAME: ecs.Secret.fromSecretsManager(dbSecret, "username"),
-				DB_PASSWORD: ecs.Secret.fromSecretsManager(dbSecret, "password"),
-			},
-		});
-
-		const migrationTaskSG = new ec2.SecurityGroup(
-			this,
-			"MigrationTaskSecurityGroup",
-			{
-				vpc: this.vpc,
-				description: "Allow Migration Task to access Database",
-			},
-		);
-
-		return { migrationTaskDef, migrationTaskSG };
-	}
-
-	private createALB(walletService: WalletEcsService) {
-		const alb = new elbv2.ApplicationLoadBalancer(this, "WalletServiceALB", {
+	private createApplicationLoadBalancer(
+		walletService: WalletEcsService,
+	): elbv2.ApplicationLoadBalancer {
+		const alb = new elbv2.ApplicationLoadBalancer(this, "LoadBalancer", {
 			vpc: this.vpc,
 			internetFacing: true,
 			loadBalancerName: "wallet-service-alb",
@@ -153,11 +96,13 @@ export class WalletInfraStack extends cdk.Stack {
 				subnets: this.vpc.publicSubnets,
 			},
 		});
+
 		const listener = alb.addListener("Listener", {
 			port: 80,
 			open: true,
 		});
-		listener.addTargets("WalletServiceTG", {
+
+		listener.addTargets("TargetGroup", {
 			port: walletService.port,
 			targets: [walletService.service],
 			healthCheck: {
