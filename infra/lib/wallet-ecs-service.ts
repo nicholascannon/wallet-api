@@ -1,6 +1,8 @@
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import type * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
+import type * as rds from "aws-cdk-lib/aws-rds";
+import type * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { Construct } from "constructs";
 
 export class WalletEcsService extends Construct {
@@ -17,10 +19,20 @@ export class WalletEcsService extends Construct {
 			vpc: ec2.IVpc;
 			cluster: ecs.Cluster;
 			containerRepository: ecr.IRepository;
+			dbSecret: secretsmanager.ISecret;
+			database: rds.IDatabaseInstance;
 		},
 	) {
 		super(scope, id);
-		const { port, imageTag, vpc, cluster, containerRepository } = options;
+		const {
+			port,
+			imageTag,
+			vpc,
+			cluster,
+			containerRepository,
+			dbSecret,
+			database,
+		} = options;
 		this.port = port;
 
 		const taskDefinition = new ecs.FargateTaskDefinition(
@@ -48,7 +60,13 @@ export class WalletEcsService extends Construct {
 			],
 			environment: {
 				PORT: port.toString(),
-				DATABASE_URL: "postgres://postgres:postgres@db:5432/wallet", // TODO: database URL
+				DB_HOST: database.instanceEndpoint.hostname,
+				DB_PORT: database.instanceEndpoint.port.toString(),
+			},
+			secrets: {
+				DB_NAME: ecs.Secret.fromSecretsManager(dbSecret, "dbname"),
+				DB_USERNAME: ecs.Secret.fromSecretsManager(dbSecret, "username"),
+				DB_PASSWORD: ecs.Secret.fromSecretsManager(dbSecret, "password"),
 			},
 		});
 
