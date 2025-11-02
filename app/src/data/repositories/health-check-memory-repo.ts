@@ -1,4 +1,4 @@
-import type { HealthRepository } from "../../services/health/health-repository.js";
+import type { HealthRepository } from '../../services/health/health-repository.js';
 
 export class HealthCheckMemoryRepo implements HealthRepository {
 	private isHealthy = true;

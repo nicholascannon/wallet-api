@@ -7,11 +7,12 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci
 
-COPY ./drizzle ./drizzle
-COPY ./src ./src
+COPY biome.json ./biome.json
 COPY tsconfig.json .
 COPY drizzle.config.ts .
 COPY vitest.config.ts .
+COPY ./drizzle ./drizzle
+COPY ./src ./src
 
 RUN npm run build
 RUN npm run test

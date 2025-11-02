@@ -1,6 +1,6 @@
-import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
-import { LOGGER } from "../lib/logger.js";
+import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import { LOGGER } from '../lib/logger.js';
 
 export function createDb(): { db: NodePgDatabase; pool: Pool } {
 	const pool = new Pool({
@@ -11,8 +11,8 @@ export function createDb(): { db: NodePgDatabase; pool: Pool } {
 		database: process.env.DB_NAME,
 	});
 
-	pool.on("connect", () => LOGGER.info("Postgres connected"));
-	pool.on("error", (err) => LOGGER.error("Postgres pool error", err));
+	pool.on('connect', () => LOGGER.info('Postgres connected'));
+	pool.on('error', (err) => LOGGER.error('Postgres pool error', err));
 
 	return { db: drizzle({ client: pool }), pool };
 }
