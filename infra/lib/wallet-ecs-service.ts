@@ -6,6 +6,7 @@ import { Construct } from "constructs";
 export class WalletEcsService extends Construct {
 	public readonly service: ecs.FargateService;
 	public readonly securityGroup: ec2.SecurityGroup;
+	public readonly port: number;
 
 	constructor(
 		scope: Construct,
@@ -20,6 +21,7 @@ export class WalletEcsService extends Construct {
 	) {
 		super(scope, id);
 		const { port, imageTag, vpc, cluster, containerRepository } = options;
+		this.port = port;
 
 		const taskDefinition = new ecs.FargateTaskDefinition(
 			this,

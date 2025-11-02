@@ -6,18 +6,24 @@ import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import type { Construct } from "constructs";
 import { WalletEcsService } from "./wallet-ecs-service";
 
+const IMAGE_TAG = "0fe2552";
+
 export class WalletInfraStack extends cdk.Stack {
+	public readonly vpc: ec2.IVpc;
+	public readonly cluster: ecs.Cluster;
+	public readonly containerRepository: ecr.IRepository;
+
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
 		super(scope, id, props);
 
-		const vpc = ec2.Vpc.fromLookup(this, "Vpc", {
+		this.vpc = ec2.Vpc.fromLookup(this, "Vpc", {
 			vpcId: "vpc-aa8468cc",
 		});
-		const cluster = new ecs.Cluster(this, "Cluster", {
-			vpc,
+		this.cluster = new ecs.Cluster(this, "Cluster", {
+			vpc: this.vpc,
 			clusterName: "wallet-service-cluster",
 		});
-		const containerRepository = ecr.Repository.fromRepositoryName(
+		this.containerRepository = ecr.Repository.fromRepositoryName(
 			this,
 			"WalletServiceRepo",
 			"wallet-service",
@@ -25,18 +31,56 @@ export class WalletInfraStack extends cdk.Stack {
 
 		const walletService = new WalletEcsService(this, "WalletEcsService", {
 			port: 8000,
-			imageTag: "0fe2552",
-			vpc,
-			cluster,
-			containerRepository,
+			imageTag: IMAGE_TAG,
+			vpc: this.vpc,
+			cluster: this.cluster,
+			containerRepository: this.containerRepository,
 		});
 
+		const migrationTaskDef = this.createMigrationTaskDef();
+
+		const alb = this.createALB(walletService);
+
+		new cdk.CfnOutput(this, "LoadBalancerDNS", {
+			value: alb.loadBalancerDnsName,
+		});
+		new cdk.CfnOutput(this, "MigrationTaskDefArn", {
+			value: migrationTaskDef.taskDefinitionArn,
+		});
+	}
+
+	private createMigrationTaskDef() {
+		const migrationTaskDef = new ecs.FargateTaskDefinition(
+			this,
+			"MigrationTaskDefinition",
+			{
+				cpu: 256,
+				memoryLimitMiB: 512,
+				family: "wallet-service-migration",
+			},
+		);
+		migrationTaskDef.addContainer("MigrationContainer", {
+			image: ecs.ContainerImage.fromEcrRepository(
+				this.containerRepository,
+				IMAGE_TAG,
+			),
+			command: ["npm", "run", "db:migrate"],
+			logging: ecs.LogDrivers.awsLogs({ streamPrefix: "WalletMigrations" }),
+			environment: {
+				DATABASE_URL: "postgres://postgres:postgres@db:5432/wallet", // TODO: database URL
+			},
+		});
+
+		return migrationTaskDef;
+	}
+
+	private createALB(walletService: WalletEcsService) {
 		const alb = new elbv2.ApplicationLoadBalancer(this, "WalletServiceALB", {
-			vpc,
+			vpc: this.vpc,
 			internetFacing: true,
 			loadBalancerName: "wallet-service-alb",
 			vpcSubnets: {
-				subnets: vpc.publicSubnets,
+				subnets: this.vpc.publicSubnets,
 			},
 		});
 		const listener = alb.addListener("Listener", {
@@ -44,7 +88,7 @@ export class WalletInfraStack extends cdk.Stack {
 			open: true,
 		});
 		listener.addTargets("WalletServiceTG", {
-			port: 8000,
+			port: walletService.port,
 			targets: [walletService.service],
 			healthCheck: {
 				path: "/v1/health",
@@ -52,8 +96,6 @@ export class WalletInfraStack extends cdk.Stack {
 			},
 		});
 
-		new cdk.CfnOutput(this, "LoadBalancerDNS", {
-			value: alb.loadBalancerDnsName,
-		});
+		return alb;
 	}
 }
