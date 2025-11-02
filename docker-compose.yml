@@ -13,13 +13,32 @@ services:
     ports:
       - 5432:5432
 
+  migrations:
+    build: ./app
+    entrypoint: npm run db:migrate
+    environment:
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: wallet
+    depends_on:
+      db:
+        condition: service_healthy
+
   wallet-api:
     build: ./app
     environment:
       PORT: 8000
-      DATABASE_URL: postgres://postgres:postgres@db:5432/wallet
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: wallet
     ports:
       - 8000:8000
     depends_on:
       db:
         condition: service_healthy
+      migrations:
+        condition: service_completed_successfully

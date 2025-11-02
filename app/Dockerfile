@@ -7,8 +7,10 @@ COPY package.json ./
 COPY package-lock.json ./
 RUN npm ci
 
+COPY ./drizzle ./drizzle
 COPY ./src ./src
 COPY tsconfig.json .
+COPY drizzle.config.ts .
 COPY vitest.config.ts .
 
 RUN npm run build
@@ -18,6 +20,8 @@ FROM base AS runtime
 WORKDIR /opt/app
 
 COPY --from=build /usr/src/app/dist ./dist
+COPY --from=build /usr/src/app/drizzle ./drizzle
+COPY --from=build /usr/src/app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/package.json ./
 
