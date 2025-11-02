@@ -4,6 +4,7 @@ import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import type { Construct } from "constructs";
+import { WalletEcsService } from "./wallet-ecs-service";
 
 export class WalletInfraStack extends cdk.Stack {
 	constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -12,70 +13,23 @@ export class WalletInfraStack extends cdk.Stack {
 		const vpc = ec2.Vpc.fromLookup(this, "Vpc", {
 			vpcId: "vpc-aa8468cc",
 		});
-
 		const cluster = new ecs.Cluster(this, "Cluster", {
 			vpc,
 			clusterName: "wallet-service-cluster",
 		});
-
-		const taskDefinition = new ecs.FargateTaskDefinition(
-			this,
-			"WalletServiceTaskDefinition",
-			{
-				cpu: 256,
-				memoryLimitMiB: 512,
-				family: "wallet-service",
-			},
-		);
-
-		const port = 8000;
-		const repo = ecr.Repository.fromRepositoryName(
+		const containerRepository = ecr.Repository.fromRepositoryName(
 			this,
 			"WalletServiceRepo",
 			"wallet-service",
 		);
 
-		taskDefinition.addContainer("WalletServiceContainer", {
-			image: ecs.ContainerImage.fromEcrRepository(repo, "0fe2552"),
-			logging: ecs.LogDriver.awsLogs({ streamPrefix: "wallet-service" }),
-			portMappings: [
-				{
-					containerPort: port,
-					hostPort: port,
-					protocol: ecs.Protocol.TCP,
-				},
-			],
-			environment: {
-				PORT: port.toString(),
-				DATABASE_URL: "postgres://postgres:postgres@db:5432/wallet", // TODO: database URL
-			},
+		const walletService = new WalletEcsService(this, "WalletEcsService", {
+			port: 8000,
+			imageTag: "0fe2552",
+			vpc,
+			cluster,
+			containerRepository,
 		});
-
-		const walletServiceSecurityGroup = new ec2.SecurityGroup(
-			this,
-			"WalletServiceSecurityGroup",
-			{
-				vpc,
-				description: "Allow ALB to access Wallet Service",
-			},
-		);
-
-		const walletFargateService = new ecs.FargateService(
-			this,
-			"WalletFargateService",
-			{
-				serviceName: "wallet-service",
-				cluster,
-				taskDefinition,
-				desiredCount: 2,
-				// NOTE: this should be private for production
-				assignPublicIp: true,
-				vpcSubnets: {
-					subnets: vpc.publicSubnets,
-				},
-				securityGroups: [walletServiceSecurityGroup],
-			},
-		);
 
 		const alb = new elbv2.ApplicationLoadBalancer(this, "WalletServiceALB", {
 			vpc,
@@ -90,8 +44,8 @@ export class WalletInfraStack extends cdk.Stack {
 			open: true,
 		});
 		listener.addTargets("WalletServiceTG", {
-			port,
-			targets: [walletFargateService],
+			port: 8000,
+			targets: [walletService.service],
 			healthCheck: {
 				path: "/v1/health",
 				healthyHttpCodes: "200-399",
