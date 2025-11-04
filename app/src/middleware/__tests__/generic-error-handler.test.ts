@@ -29,7 +29,7 @@ describe('genericErrorHandler middleware', () => {
 
 		genericErrorHandler(error, req, res, next);
 
-		expect(LOGGER.error).toHaveBeenCalledWith(error);
+		expect(LOGGER.error).toHaveBeenCalledWith({ error });
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			message: 'Internal server error',
@@ -69,7 +69,7 @@ describe('genericErrorHandler middleware', () => {
 
 			genericErrorHandler(error, req, res, next);
 
-			expect(LOGGER.error).toHaveBeenCalledWith(error);
+			expect(LOGGER.error).toHaveBeenCalledWith({ error });
 			expect(res.status).toHaveBeenCalledWith(500);
 			expect(res.json).toHaveBeenCalledWith({
 				message: 'Internal server error',
