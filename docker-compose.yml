@@ -28,6 +28,8 @@ services:
 
   wallet-api:
     build: ./app
+    profiles:
+      - api
     environment:
       PORT: 8000
       DB_USERNAME: postgres
