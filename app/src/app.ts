@@ -3,6 +3,7 @@ import express from 'express';
 import { HealthController } from './controllers/health-controller.js';
 import { WalletController } from './controllers/wallet-controller.js';
 import { loggingMiddleware } from './lib/logger.js';
+import { genericErrorHandler } from './middleware/generic-error-handler.js';
 import { zodErrorHandler } from './middleware/zod-error-handler.js';
 import type { HealthRepository } from './services/health/health-repository.js';
 import type { WalletRepository } from './services/wallet/repository.js';
@@ -20,7 +21,12 @@ export function createApp({
 	const app = express();
 
 	if (enableLogging) app.use(loggingMiddleware);
-	app.use(express.json());
+	app.use(
+		express.json({
+			limit: '100kb',
+			strict: true,
+		}),
+	);
 
 	const walletService = new WalletService(walletRepo);
 	const walletController = new WalletController(walletService);
@@ -30,6 +36,7 @@ export function createApp({
 	app.use('/v1/health', healthController.router);
 
 	app.use(zodErrorHandler);
+	app.use(genericErrorHandler);
 
 	return app;
 }
