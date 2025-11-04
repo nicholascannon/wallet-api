@@ -5,6 +5,5 @@
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.codeActionsOnSave": {
 		"source.fixAll.biome": "explicit"
-	},
-	"jest.rootPath": "./app"
+	}
 }
