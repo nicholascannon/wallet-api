@@ -1,11 +1,13 @@
-import * as cdk from "aws-cdk-lib";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as rds from "aws-cdk-lib/aws-rds";
-import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import { Construct } from "constructs";
+import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as rds from 'aws-cdk-lib/aws-rds';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { Construct } from 'constructs';
+import type { EnvironmentConfig } from './config';
 
 export interface WalletDatabaseProps {
 	vpc: ec2.IVpc;
+	envConfig: EnvironmentConfig;
 }
 
 export class WalletDatabase extends Construct {
@@ -16,38 +18,42 @@ export class WalletDatabase extends Construct {
 	constructor(scope: Construct, id: string, props: WalletDatabaseProps) {
 		super(scope, id);
 
-		this.secret = new secretsmanager.Secret(this, "Secret", {
+		this.secret = new secretsmanager.Secret(this, 'Secret', {
 			generateSecretString: {
-				secretStringTemplate: JSON.stringify({ username: "postgres" }),
-				generateStringKey: "password",
+				secretStringTemplate: JSON.stringify({ username: 'postgres' }),
+				generateStringKey: 'password',
 				passwordLength: 20,
-				excludeCharacters: " %+~`#$&*()|[]{}:;<>?!'/@\"\\",
+				excludeCharacters: ' %+~`#$&*()|[]{}:;<>?!\'/@"\\',
 			},
 		});
 
-		this.securityGroup = new ec2.SecurityGroup(this, "SecurityGroup", {
+		this.securityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', {
 			vpc: props.vpc,
-			description: "Security group for Postgres database",
+			description: 'Security group for Postgres database',
 			allowAllOutbound: false,
 		});
 
-		this.database = new rds.DatabaseInstance(this, "Database", {
+		const instanceClass = ec2.InstanceClass[
+			props.envConfig.rdsInstanceType.class as keyof typeof ec2.InstanceClass
+		] as ec2.InstanceClass;
+		const instanceSize = ec2.InstanceSize[
+			props.envConfig.rdsInstanceType.size as keyof typeof ec2.InstanceSize
+		] as ec2.InstanceSize;
+
+		this.database = new rds.DatabaseInstance(this, 'Database', {
 			engine: rds.DatabaseInstanceEngine.postgres({
 				version: rds.PostgresEngineVersion.VER_13,
 			}),
-			instanceType: ec2.InstanceType.of(
-				ec2.InstanceClass.T3,
-				ec2.InstanceSize.MICRO,
-			),
+			instanceType: ec2.InstanceType.of(instanceClass, instanceSize),
 			vpc: props.vpc,
 			vpcSubnets: {
-				subnets: props.vpc.publicSubnets, // no private subnets in this VPC for simplicity
+				subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
 			},
 			securityGroups: [this.securityGroup],
-			databaseName: "wallet",
+			databaseName: 'wallet',
 			credentials: rds.Credentials.fromSecret(this.secret),
-			allocatedStorage: 20,
-			maxAllocatedStorage: 20,
+			allocatedStorage: props.envConfig.rdsAllocatedStorage,
+			maxAllocatedStorage: props.envConfig.rdsMaxAllocatedStorage,
 			storageType: rds.StorageType.GP3,
 			multiAz: false,
 			publiclyAccessible: false,
