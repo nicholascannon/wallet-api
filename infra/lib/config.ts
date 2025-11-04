@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface EnvironmentConfig {
 	readonly environment: string;
 	readonly vpcId: string;
@@ -63,37 +65,33 @@ export const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
 };
 
 export function validateEnvironment(env: string): void {
-	if (!env || typeof env !== 'string') {
-		throw new Error('Environment name is required and must be a string');
-	}
-	const validEnvironments = Object.keys(ENVIRONMENTS);
-	if (!validEnvironments.includes(env.toLowerCase())) {
-		throw new Error(
-			`Invalid environment: ${env}. Valid environments are: ${validEnvironments.join(', ')}`,
-		);
-	}
+	z.string()
+		.superRefine((env, ctx) => {
+			if (!['dev', 'staging', 'prod'].includes(env.toLowerCase())) {
+				ctx.addIssue({
+					code: 'custom',
+					message: `Invalid environment: ${env}. Valid environments are: ${['dev', 'staging', 'prod'].join(', ')}`,
+				});
+			}
+		})
+		.parse(env);
 }
 
 export function validateImageTag(imageTag: string | undefined): string {
-	if (
-		!imageTag ||
-		typeof imageTag !== 'string' ||
-		imageTag.trim().length === 0
-	) {
-		throw new Error(
-			'imageTag is required. Provide it via stack props or CDK context: cdk deploy --context imageTag=<tag>',
-		);
-	}
-	return imageTag;
+	return z
+		.string({
+			message:
+				'imageTag is required. Provide it via stack props or CDK context: cdk deploy --context imageTag=<tag>',
+		})
+		.min(1, 'imageTag cannot be empty')
+		.parse(imageTag);
 }
 
 export function validateVpcId(vpcId: string | undefined): string {
-	if (!vpcId || typeof vpcId !== 'string' || !vpcId.startsWith('vpc-')) {
-		throw new Error(
-			"VPC ID is required and must be a valid VPC ID (starts with 'vpc-')",
-		);
-	}
-	return vpcId;
+	return z
+		.string()
+		.regex(/^vpc-/, "VPC ID must be a valid VPC ID (starts with 'vpc-')")
+		.parse(vpcId);
 }
 
 export function validateNumericRange(
@@ -102,7 +100,8 @@ export function validateNumericRange(
 	max: number,
 	name: string,
 ): void {
-	if (value < min || value > max) {
-		throw new Error(`${name} must be between ${min} and ${max}, got ${value}`);
-	}
+	z.number()
+		.min(min, { message: `${name} must be at least ${min}, got ${value}` })
+		.max(max, { message: `${name} must be at most ${max}, got ${value}` })
+		.parse(value);
 }
