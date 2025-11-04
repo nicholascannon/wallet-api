@@ -3,7 +3,7 @@ import type * as ecs from 'aws-cdk-lib/aws-ecs';
 import type * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import type * as rds from 'aws-cdk-lib/aws-rds';
 import { Construct } from 'constructs';
-import type { EnvironmentConfig } from './config';
+import type { EnvironmentConfig } from '../config';
 import type { WalletEcsService } from './wallet-ecs-service';
 
 export interface CloudWatchAlarmsProps {

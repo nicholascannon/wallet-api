@@ -5,7 +5,7 @@ import * as ecs from 'aws-cdk-lib/aws-ecs';
 import type * as rds from 'aws-cdk-lib/aws-rds';
 import type * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
-import type { EnvironmentConfig } from './config';
+import type { EnvironmentConfig } from '../config';
 
 interface WalletEcsServiceProps {
 	readonly port: number;

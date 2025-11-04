@@ -4,17 +4,17 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import type { Construct } from 'constructs';
-import { CloudWatchAlarms } from './cloudwatch-alarms';
 import {
 	ENVIRONMENTS,
 	validateEnvironment,
 	validateImageTag,
 	validateVpcId,
 } from './config';
-import { MigrationTask } from './migration-task';
+import { CloudWatchAlarms } from './constructs/cloudwatch-alarms';
+import { MigrationTask } from './constructs/migration-task';
+import { WalletDatabase } from './constructs/wallet-database';
+import { WalletEcsService } from './constructs/wallet-ecs-service';
 import { TaggingAspect } from './tagging';
-import { WalletDatabase } from './wallet-database';
-import { WalletEcsService } from './wallet-ecs-service';
 
 export interface WalletInfraStackProps extends cdk.StackProps {
 	readonly imageTag?: string;

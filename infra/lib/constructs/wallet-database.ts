@@ -3,7 +3,7 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as rds from 'aws-cdk-lib/aws-rds';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
-import type { EnvironmentConfig } from './config';
+import type { EnvironmentConfig } from '../config';
 
 export interface WalletDatabaseProps {
 	vpc: ec2.IVpc;
