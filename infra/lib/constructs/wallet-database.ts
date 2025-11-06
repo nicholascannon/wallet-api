@@ -59,6 +59,7 @@ export class WalletDatabase extends Construct {
 			publiclyAccessible: false,
 			deletionProtection: false, // because this is a learning project
 			backupRetention: cdk.Duration.days(0), // disable backups
+			enablePerformanceInsights: true,
 		});
 	}
 }
