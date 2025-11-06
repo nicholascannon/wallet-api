@@ -18,7 +18,7 @@ export class WalletController implements Controller {
 
 	constructor(private readonly walletService: WalletService) {
 		this.router = Router();
-		this.router.get('/:id', this.getBalance);
+		this.router.get('/:id', this.getWallet);
 		this.router.post('/:id/debit', this.debit);
 		this.router.post('/:id/credit', this.credit);
 		this.router.use(this.errorHandler);
@@ -38,13 +38,13 @@ export class WalletController implements Controller {
 		return next(error);
 	};
 
-	private readonly getBalanceSchema = z.uuid();
+	private readonly getWalletSchema = z.uuid();
 
-	private getBalance = async (req: Request, res: Response) => {
-		const walletId = this.getBalanceSchema.parse(req.params.id);
-		const balance = await this.walletService.getBalance(walletId);
+	private getWallet = async (req: Request, res: Response) => {
+		const walletId = this.getWalletSchema.parse(req.params.id);
+		const wallet = await this.walletService.getWallet(walletId);
 
-		return res.json({ balance });
+		return res.json(wallet);
 	};
 
 	private readonly debitSchema = z.object({

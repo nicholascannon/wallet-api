@@ -20,3 +20,12 @@ export function credit(wallet: Wallet, transactionAmount: number): number {
 
 	return balance.plus(amount).toNumber();
 }
+
+export function createWallet(walletId: string): Wallet {
+	return {
+		id: walletId,
+		balance: 0,
+		version: 0,
+		updated: new Date(),
+	};
+}

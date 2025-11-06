@@ -7,14 +7,14 @@ import {
 } from './errors.js';
 import type { WalletRepository } from './repository.js';
 import type { Transaction, Wallet } from './types.js';
-import { credit, debit } from './wallet-operations.js';
+import { createWallet, credit, debit } from './wallet-operations.js';
 
 export class WalletService {
 	constructor(private readonly repo: WalletRepository) {}
 
-	public async getBalance(walletId: string): Promise<number> {
+	public async getWallet(walletId: string): Promise<Wallet | undefined> {
 		const wallet = await this.repo.getWallet(walletId);
-		return wallet?.balance ?? 0;
+		return wallet ?? createWallet(walletId);
 	}
 
 	public async debit(walletId: string, amount: number): Promise<Transaction> {
@@ -50,12 +50,7 @@ export class WalletService {
 			const fetchedWallet = await this.repo.getWallet(walletId);
 			const created = !fetchedWallet;
 
-			const wallet: Wallet = fetchedWallet ?? {
-				id: walletId,
-				balance: 0,
-				version: 0,
-				updated: new Date(),
-			};
+			const wallet = fetchedWallet ?? createWallet(walletId);
 
 			const newBalance = credit(wallet, amount);
 			const transaction: Transaction = {

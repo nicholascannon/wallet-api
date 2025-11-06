@@ -1,9 +1,11 @@
 import type { Application } from 'express';
 import request from 'supertest';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../../app.js';
 import { HealthCheckMemoryRepo } from '../../data/repositories/health-check-memory-repo.js';
 import { WalletMemoryRepo } from '../../data/repositories/wallet-memory-repo.js';
+
+const NOW = new Date('2025-01-01T00:00:00.000Z');
 
 describe('WalletController', () => {
 	let app: Application;
@@ -15,13 +17,26 @@ describe('WalletController', () => {
 			healthCheckRepo: new HealthCheckMemoryRepo(),
 			enableLogging: false,
 		});
+		vi.useFakeTimers({
+			toFake: ['Date'], // supertest depends on other timers
+		});
+		vi.setSystemTime(NOW);
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
 	});
 
 	describe('GET /wallet/:id', () => {
 		it('returns 0 for a new wallet', async () => {
 			const res = await request(app).get(`/v1/wallet/${walletId}`);
 			expect(res.status).toBe(200);
-			expect(res.body).toEqual({ balance: 0 });
+			expect(res.body).toEqual({
+				id: walletId,
+				balance: 0,
+				version: 0,
+				updated: NOW.toISOString(),
+			});
 		});
 
 		it('returns 200 and balance for valid wallet', async () => {
@@ -32,7 +47,12 @@ describe('WalletController', () => {
 
 			const res = await request(app).get(`/v1/wallet/${walletId}`);
 			expect(res.status).toBe(200);
-			expect(res.body).toEqual({ balance: 100 });
+			expect(res.body).toEqual({
+				id: walletId,
+				balance: 100,
+				version: 1,
+				updated: NOW.toISOString(),
+			});
 		});
 
 		it('returns 400 for invalid wallet id', async () => {

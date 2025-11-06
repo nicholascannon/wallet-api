@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { InsufficientFundsError, InvalidDebitAmountError } from '../errors.js';
-import { credit, debit } from '../wallet-operations.js';
+import { createWallet, credit, debit } from '../wallet-operations.js';
 
 describe('Wallet operations', () => {
 	describe('credit', () => {
@@ -108,6 +108,27 @@ describe('Wallet operations', () => {
 					200,
 				),
 			).toThrow(InsufficientFundsError);
+		});
+	});
+
+	describe('createWallet', () => {
+		beforeEach(() => {
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date('2025-01-01T00:00:00.000Z'));
+		});
+
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		it('should create a new wallet', () => {
+			const wallet = createWallet('123');
+			expect(wallet).toEqual({
+				id: '123',
+				balance: 0,
+				version: 0,
+				updated: new Date('2025-01-01T00:00:00.000Z'),
+			});
 		});
 	});
 });
