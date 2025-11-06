@@ -28,7 +28,7 @@ export class PgWalletRepo implements WalletRepository {
 		};
 	}
 
-	async upsertWallet(wallet: Wallet): Promise<void> {
+	async updateWallet(wallet: Wallet): Promise<void> {
 		try {
 			await this.db.insert(walletTable).values({
 				wallet_id: wallet.id,

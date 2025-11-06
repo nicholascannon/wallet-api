@@ -36,7 +36,7 @@ export class WalletService {
 				updated: new Date(),
 			};
 
-			await this.repo.upsertWallet(updatedWallet);
+			await this.repo.updateWallet(updatedWallet);
 			return updatedWallet;
 		});
 	}
@@ -65,7 +65,7 @@ export class WalletService {
 				updated: new Date(),
 			};
 
-			await this.repo.upsertWallet(updatedWallet);
+			await this.repo.updateWallet(updatedWallet);
 
 			if (created) {
 				LOGGER.info('Created new wallet', { walletId });

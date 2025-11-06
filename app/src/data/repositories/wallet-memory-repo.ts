@@ -8,7 +8,7 @@ export class WalletMemoryRepo implements WalletRepository {
 		return this.wallets.get(walletId);
 	}
 
-	async upsertWallet(wallet: Wallet): Promise<void> {
+	async updateWallet(wallet: Wallet): Promise<void> {
 		this.wallets.set(wallet.id, wallet);
 	}
 }

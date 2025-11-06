@@ -27,7 +27,7 @@ describe('WalletService', () => {
 				created: new Date(),
 				updated: new Date(),
 			};
-			await repo.upsertWallet(wallet);
+			await repo.updateWallet(wallet);
 
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(42);
@@ -49,7 +49,7 @@ describe('WalletService', () => {
 				created: new Date(),
 				updated: new Date(),
 			};
-			await repo.upsertWallet(wallet);
+			await repo.updateWallet(wallet);
 
 			const result = await service.debit(WALLET_ID, 30);
 			expect(result.balance).toBe(70);
@@ -79,7 +79,7 @@ describe('WalletService', () => {
 				created: new Date(),
 				updated: new Date(),
 			};
-			await repo.upsertWallet(wallet);
+			await repo.updateWallet(wallet);
 
 			const result = await service.credit(WALLET_ID, 15);
 			expect(result.created).toBe(false);
