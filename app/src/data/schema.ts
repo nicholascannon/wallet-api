@@ -7,12 +7,13 @@ import {
 	uuid,
 } from 'drizzle-orm/pg-core';
 
-export const walletTable = pgTable(
-	'wallet_transactions',
+export const transactionsTable = pgTable(
+	'transactions',
 	{
 		id: bigserial({ mode: 'bigint' }).primaryKey(),
 		wallet_id: uuid().notNull(),
 		balance: numeric({ precision: 20, scale: 2 }).notNull(),
+		amount: numeric({ precision: 20, scale: 2 }).notNull(),
 		created: timestamp().notNull().defaultNow(),
 		version: numeric({ precision: 20, scale: 0 }).notNull(), // For optimistic locking
 	},

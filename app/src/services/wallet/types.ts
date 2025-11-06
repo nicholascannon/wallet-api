@@ -1,6 +1,14 @@
+export interface Transaction {
+	walletId: string;
+	balance: number; // number is sufficient for database precision (20,2)
+	amount: number;
+	version: number;
+	created: Date;
+}
+
 export interface Wallet {
 	id: string;
-	balance: number; // number is sufficient for database precision (20,2)
+	balance: number;
 	version: number;
 	updated: Date;
 }

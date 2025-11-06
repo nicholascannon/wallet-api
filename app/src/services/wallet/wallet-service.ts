@@ -6,7 +6,7 @@ import {
 	WalletNotFoundError,
 } from './errors.js';
 import type { WalletRepository } from './repository.js';
-import type { Wallet } from './types.js';
+import type { Transaction, Wallet } from './types.js';
 import { credit, debit } from './wallet-operations.js';
 
 export class WalletService {
@@ -17,7 +17,7 @@ export class WalletService {
 		return wallet?.balance ?? 0;
 	}
 
-	public async debit(walletId: string, amount: number): Promise<Wallet> {
+	public async debit(walletId: string, amount: number): Promise<Transaction> {
 		if (amount < 0) {
 			throw new InvalidDebitAmountError(amount);
 		}
@@ -28,50 +28,51 @@ export class WalletService {
 				throw new WalletNotFoundError(walletId);
 			}
 
-			const newBalance = debit({ balance: wallet.balance, amount });
-			const updatedWallet: Wallet = {
-				...wallet,
+			const newBalance = debit(wallet, amount);
+			const transaction: Transaction = {
+				walletId,
 				balance: newBalance,
+				amount,
 				version: wallet.version + 1,
-				updated: new Date(),
+				created: new Date(),
 			};
 
-			await this.repo.updateWallet(updatedWallet);
-			return updatedWallet;
+			await this.repo.saveTransaction(transaction);
+			return transaction;
 		});
 	}
 
 	public async credit(
 		walletId: string,
 		amount: number,
-	): Promise<{ created: boolean; wallet: Wallet }> {
+	): Promise<{ created: boolean; transaction: Transaction }> {
 		return this.withRetry(async () => {
-			const wallet = await this.repo.getWallet(walletId);
-			const created = !wallet;
+			const fetchedWallet = await this.repo.getWallet(walletId);
+			const created = !fetchedWallet;
 
-			const baseWallet: Wallet = wallet || {
+			const wallet: Wallet = fetchedWallet ?? {
 				id: walletId,
 				balance: 0,
 				version: 0,
 				updated: new Date(),
 			};
 
-			const newBalance = credit({ balance: baseWallet.balance, amount });
-
-			const updatedWallet: Wallet = {
-				...baseWallet,
+			const newBalance = credit(wallet, amount);
+			const transaction: Transaction = {
+				walletId,
 				balance: newBalance,
-				version: baseWallet.version + 1,
-				updated: new Date(),
+				amount,
+				version: wallet.version + 1,
+				created: new Date(),
 			};
 
-			await this.repo.updateWallet(updatedWallet);
+			await this.repo.saveTransaction(transaction);
 
 			if (created) {
 				LOGGER.info('Created new wallet', { walletId });
 			}
 
-			return { wallet: updatedWallet, created };
+			return { transaction, created };
 		});
 	}
 

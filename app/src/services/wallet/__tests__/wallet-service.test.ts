@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { WalletMemoryRepo } from '../../../data/repositories/wallet-memory-repo.js';
 import { WalletNotFoundError } from '../errors.js';
+import type { Transaction } from '../types.js';
 import { WalletService } from '../wallet-service.js';
 
 describe('WalletService', () => {
@@ -20,14 +21,14 @@ describe('WalletService', () => {
 		});
 
 		it('returns the correct balance for an existing wallet', async () => {
-			const wallet = {
-				id: WALLET_ID,
+			const transaction: Transaction = {
+				walletId: WALLET_ID,
 				balance: 42,
+				amount: 42,
 				version: 1,
 				created: new Date(),
-				updated: new Date(),
 			};
-			await repo.updateWallet(wallet);
+			await repo.saveTransaction(transaction);
 
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(42);
@@ -42,19 +43,19 @@ describe('WalletService', () => {
 		});
 
 		it('debits the wallet and returns the new balance', async () => {
-			const wallet = {
-				id: WALLET_ID,
+			const transaction: Transaction = {
+				walletId: WALLET_ID,
 				balance: 100,
+				amount: 30,
 				version: 1,
 				created: new Date(),
-				updated: new Date(),
 			};
-			await repo.updateWallet(wallet);
+			await repo.saveTransaction(transaction);
 
 			const result = await service.debit(WALLET_ID, 30);
 			expect(result.balance).toBe(70);
 			expect(result.version).toBe(2);
-			expect(result.id).toBe(WALLET_ID);
+			expect(result.walletId).toBe(WALLET_ID);
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(70);
 		});
@@ -64,28 +65,28 @@ describe('WalletService', () => {
 		it('creates a new wallet if it does not exist and credits the amount', async () => {
 			const result = await service.credit(WALLET_ID, 50);
 			expect(result.created).toBe(true);
-			expect(result.wallet.balance).toBe(50);
-			expect(result.wallet.version).toBe(1);
-			expect(result.wallet.id).toBe(WALLET_ID);
+			expect(result.transaction.balance).toBe(50);
+			expect(result.transaction.version).toBe(1);
+			expect(result.transaction.walletId).toBe(WALLET_ID);
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(50);
 		});
 
 		it('credits an existing wallet and returns the new balance', async () => {
-			const wallet = {
-				id: WALLET_ID,
+			const transaction: Transaction = {
+				walletId: WALLET_ID,
 				balance: 20,
+				amount: 15,
 				version: 1,
 				created: new Date(),
-				updated: new Date(),
 			};
-			await repo.updateWallet(wallet);
+			await repo.saveTransaction(transaction);
 
 			const result = await service.credit(WALLET_ID, 15);
 			expect(result.created).toBe(false);
-			expect(result.wallet.balance).toBe(35);
-			expect(result.wallet.version).toBe(2);
-			expect(result.wallet.id).toBe(WALLET_ID);
+			expect(result.transaction.balance).toBe(35);
+			expect(result.transaction.version).toBe(2);
+			expect(result.transaction.walletId).toBe(WALLET_ID);
 			const balance = await service.getBalance(WALLET_ID);
 			expect(balance).toBe(35);
 		});

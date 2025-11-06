@@ -1,12 +1,10 @@
 import { Decimal } from 'decimal.js';
 import { InsufficientFundsError, InvalidDebitAmountError } from './errors.js';
+import type { Wallet } from './types.js';
 
-export function debit(transaction: {
-	balance: number;
-	amount: number;
-}): number {
-	const balance = new Decimal(transaction.balance);
-	const amount = new Decimal(transaction.amount);
+export function debit(wallet: Wallet, transactionAmount: number): number {
+	const balance = new Decimal(wallet.balance);
+	const amount = new Decimal(transactionAmount);
 
 	if (amount.lessThan(0)) throw new InvalidDebitAmountError(amount.toNumber());
 	if (amount.greaterThan(balance)) {
@@ -16,12 +14,9 @@ export function debit(transaction: {
 	return balance.minus(amount).toNumber();
 }
 
-export function credit(transaction: {
-	balance: number;
-	amount: number;
-}): number {
-	const balance = new Decimal(transaction.balance);
-	const amount = new Decimal(transaction.amount);
+export function credit(wallet: Wallet, transactionAmount: number): number {
+	const balance = new Decimal(wallet.balance);
+	const amount = new Decimal(transactionAmount);
 
 	return balance.plus(amount).toNumber();
 }
