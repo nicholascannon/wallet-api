@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { ConcurrentModificationError } from '../../services/wallet/errors.js';
@@ -13,40 +13,28 @@ export class PgWalletRepo implements WalletRepository {
 		const results = await this.db
 			.select()
 			.from(walletTable)
-			.where(eq(walletTable.id, walletId))
+			.where(eq(walletTable.wallet_id, walletId))
+			.orderBy(desc(walletTable.version))
 			.limit(1);
 
 		if (!results[0]) return undefined;
 
 		const row = results[0];
 		return {
-			id: row.id,
+			id: row.wallet_id,
 			balance: Number(row.balance),
 			version: Number(row.version),
-			created: row.created,
-			updated: row.updated,
+			updated: row.created, // created is latest transaction created timestamp
 		};
 	}
 
 	async upsertWallet(wallet: Wallet): Promise<void> {
 		try {
-			await this.db
-				.insert(walletTable)
-				.values({
-					id: wallet.id,
-					balance: wallet.balance.toString(),
-					version: wallet.version.toString(),
-					created: wallet.created,
-					updated: wallet.updated,
-				})
-				.onConflictDoUpdate({
-					target: walletTable.id,
-					set: {
-						balance: wallet.balance.toString(),
-						version: wallet.version.toString(),
-						updated: wallet.updated,
-					},
-				});
+			await this.db.insert(walletTable).values({
+				wallet_id: wallet.id,
+				balance: wallet.balance.toString(),
+				version: wallet.version.toString(),
+			});
 		} catch (error) {
 			// Check if it's a unique constraint violation (stale version)
 			if (error instanceof DrizzleQueryError) {

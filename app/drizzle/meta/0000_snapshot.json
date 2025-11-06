@@ -1,35 +1,33 @@
 {
-  "id": "4d06ccfe-5866-4fa1-bb13-a8a3ceb05c61",
+  "id": "35abfa91-d5ed-4d72-84d8-df0f11e729c6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.wallet": {
-      "name": "wallet",
+    "public.wallet_transactions": {
+      "name": "wallet_transactions",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
-          "type": "uuid",
+          "type": "bigserial",
           "primaryKey": true,
+          "notNull": true
+        },
+        "wallet_id": {
+          "name": "wallet_id",
+          "type": "uuid",
+          "primaryKey": false,
           "notNull": true
         },
         "balance": {
           "name": "balance",
           "type": "numeric(20, 2)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'0'"
+          "notNull": true
         },
         "created": {
           "name": "created",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated": {
-          "name": "updated",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -39,8 +37,7 @@
           "name": "version",
           "type": "numeric(20, 0)",
           "primaryKey": false,
-          "notNull": true,
-          "default": "'0'"
+          "notNull": true
         }
       },
       "indexes": {},
@@ -51,7 +48,7 @@
           "name": "wallet_id_version_unique",
           "nullsNotDistinct": false,
           "columns": [
-            "id",
+            "wallet_id",
             "version"
           ]
         }

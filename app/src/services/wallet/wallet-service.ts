@@ -53,7 +53,6 @@ export class WalletService {
 				id: walletId,
 				balance: 0,
 				version: 0,
-				created: new Date(),
 				updated: new Date(),
 			};
 

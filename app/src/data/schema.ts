@@ -1,20 +1,24 @@
-import { numeric, pgTable, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import {
+	bigserial,
+	numeric,
+	pgTable,
+	timestamp,
+	unique,
+	uuid,
+} from 'drizzle-orm/pg-core';
 
-// very simple crud wallet schema
 export const walletTable = pgTable(
-	'wallet',
+	'wallet_transactions',
 	{
-		id: uuid().primaryKey(),
-		balance: numeric({ precision: 20, scale: 2 }).notNull().default('0'),
+		id: bigserial({ mode: 'bigint' }).primaryKey(),
+		wallet_id: uuid().notNull(),
+		balance: numeric({ precision: 20, scale: 2 }).notNull(),
 		created: timestamp().notNull().defaultNow(),
-		updated: timestamp()
-			.notNull()
-			.defaultNow()
-			.$onUpdate(() => new Date()),
-		version: numeric({ precision: 20, scale: 0 }).notNull().default('0'), // For optimistic locking
+		version: numeric({ precision: 20, scale: 0 }).notNull(), // For optimistic locking
 	},
 	(table) => {
-		// Unique constraint to prevent concurrent updates with stale data
-		return [unique('wallet_id_version_unique').on(table.id, table.version)];
+		return [
+			unique('wallet_id_version_unique').on(table.wallet_id, table.version),
+		];
 	},
 );

@@ -12,5 +12,5 @@ export function createDb(config: Config['db']): {
 	pool.on('connect', () => LOGGER.info('Postgres connected'));
 	pool.on('error', (err) => LOGGER.error('Postgres pool error', err));
 
-	return { db: drizzle({ client: pool }), pool };
+	return { db: drizzle({ client: pool, logger: true }), pool };
 }
