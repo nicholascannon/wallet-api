@@ -1,11 +1,11 @@
 {
-  "id": "35abfa91-d5ed-4d72-84d8-df0f11e729c6",
+  "id": "8b201055-3ab5-42c0-8a93-22e642611376",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.wallet_transactions": {
-      "name": "wallet_transactions",
+    "public.transactions": {
+      "name": "transactions",
       "schema": "",
       "columns": {
         "id": {
@@ -22,6 +22,12 @@
         },
         "balance": {
           "name": "balance",
+          "type": "numeric(20, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "amount": {
+          "name": "amount",
           "type": "numeric(20, 2)",
           "primaryKey": false,
           "notNull": true
