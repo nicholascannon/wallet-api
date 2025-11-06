@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { WalletMemoryRepo } from '../../../data/repositories/wallet-memory-repo.js';
+import { WalletMemoryRepo } from '../../../data/repositories/wallet/wallet-memory-repo.js';
 import { WalletNotFoundError } from '../errors.js';
 import type { Transaction } from '../types.js';
 import { WalletService } from '../wallet-service.js';

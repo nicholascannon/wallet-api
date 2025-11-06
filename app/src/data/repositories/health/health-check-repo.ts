@@ -1,6 +1,6 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { LOGGER } from '../../lib/logger.js';
-import type { HealthRepository } from '../../services/health/health-repository.js';
+import { LOGGER } from '../../../lib/logger.js';
+import type { HealthRepository } from '../../../services/health/health-repository.js';
 
 export class HealthCheckRepo implements HealthRepository {
 	constructor(private db: NodePgDatabase) {}

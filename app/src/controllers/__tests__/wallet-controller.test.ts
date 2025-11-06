@@ -2,8 +2,8 @@ import type { Application } from 'express';
 import request from 'supertest';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createApp } from '../../app.js';
-import { HealthCheckMemoryRepo } from '../../data/repositories/health-check-memory-repo.js';
-import { WalletMemoryRepo } from '../../data/repositories/wallet-memory-repo.js';
+import { HealthCheckMemoryRepo } from '../../data/repositories/health/health-check-memory-repo.js';
+import { WalletMemoryRepo } from '../../data/repositories/wallet/wallet-memory-repo.js';
 
 const NOW = new Date('2025-01-01T00:00:00.000Z');
 

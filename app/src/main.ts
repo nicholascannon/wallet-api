@@ -2,8 +2,8 @@ import 'dotenv/config';
 import { createApp } from './app.js';
 import { CONFIG } from './config/index.js';
 import { createDb } from './data/db.js';
-import { HealthCheckRepo } from './data/repositories/health-check-repo.js';
-import { PgWalletRepo } from './data/repositories/pg-wallet-repo.js';
+import { HealthCheckRepo } from './data/repositories/health/health-check-repo.js';
+import { PgWalletRepo } from './data/repositories/wallet/pg-wallet-repo.js';
 import { lifecycle } from './lib/lifecycle.js';
 import { LOGGER, setupProcessLogging } from './lib/logger.js';
 

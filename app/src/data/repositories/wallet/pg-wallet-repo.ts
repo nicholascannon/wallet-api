@@ -1,10 +1,10 @@
 import { desc, eq } from 'drizzle-orm';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { ConcurrentModificationError } from '../../services/wallet/errors.js';
-import type { WalletRepository } from '../../services/wallet/repository.js';
-import type { Transaction, Wallet } from '../../services/wallet/types.js';
-import { transactionsTable } from '../schema.js';
+import { ConcurrentModificationError } from '../../../services/wallet/errors.js';
+import type { WalletRepository } from '../../../services/wallet/repository.js';
+import type { Transaction, Wallet } from '../../../services/wallet/types.js';
+import { transactionsTable } from '../../schema.js';
 
 export class PgWalletRepo implements WalletRepository {
 	constructor(private db: NodePgDatabase) {}
