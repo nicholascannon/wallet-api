@@ -214,13 +214,6 @@ export class WalletInfraStack extends cdk.Stack {
 			crossZoneEnabled: true,
 		});
 
-		// Allow ALB to access ECS service
-		walletService.securityGroup.addIngressRule(
-			ec2.Peer.ipv4(this.vpc.vpcCidrBlock),
-			ec2.Port.tcp(walletService.port),
-			'Allow ALB to access ECS service',
-		);
-
 		const listener = alb.addListener('Listener', {
 			port: 80,
 			open: true,
