@@ -13,6 +13,15 @@ export interface MigrationTaskProps {
 	dbSecret: secretsmanager.ISecret;
 }
 
+/**
+ * This should be defined in its own CDK stack that is deployed
+ * before this stack so database changes are live before the service
+ * is deployed.
+ *
+ * Right now the migration task (with the database changes) is deployed
+ * at the same time as the service, which depends on those changes. We
+ * don't get the chance to run the migrations before service deployment.
+ */
 export class MigrationTask extends Construct {
 	public readonly taskDefinition: ecs.FargateTaskDefinition;
 	public readonly securityGroup: ec2.SecurityGroup;
