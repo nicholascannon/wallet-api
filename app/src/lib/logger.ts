@@ -1,12 +1,19 @@
 import expressWinston from 'express-winston';
 import winston from 'winston';
+import { CONFIG } from '../config/env.js';
 
 export const LOGGER = winston.createLogger({
 	level: 'info',
-	format: winston.format.combine(
-		winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-		winston.format.json(),
-	),
+	format:
+		CONFIG.env === 'development'
+			? winston.format.combine(
+					winston.format.colorize(),
+					winston.format.simple(),
+				)
+			: winston.format.combine(
+					winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+					winston.format.json(),
+				),
 	transports: [new winston.transports.Console()],
 });
 

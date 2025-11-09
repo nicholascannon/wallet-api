@@ -2,6 +2,7 @@ import * as z from 'zod';
 
 export const CONFIG = z
 	.object({
+		env: z.enum(['development', 'production', 'test']),
 		port: z.string().transform(Number),
 		db: z.object({
 			host: z.string(),
@@ -12,6 +13,7 @@ export const CONFIG = z
 		}),
 	})
 	.parse({
+		env: process.env.NODE_ENV,
 		port: process.env.PORT,
 		db: {
 			host: process.env.DB_HOST,

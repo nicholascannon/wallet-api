@@ -27,5 +27,6 @@ COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/package.json ./
 
 USER node
+ENV NODE_ENV=production
 
 ENTRYPOINT [ "node", "./dist/main" ]
