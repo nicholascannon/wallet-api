@@ -37,6 +37,14 @@ export function createApp({
 	app.use('/v1/wallet', walletController.router);
 	app.use('/v1/health', healthController.router);
 
+	app.use((req, res) => {
+		return res.status(404).json({
+			message: 'Resource not found',
+			path: req.originalUrl,
+			method: req.method,
+		});
+	});
+
 	app.use(zodErrorHandler);
 	app.use(genericErrorHandler);
 
