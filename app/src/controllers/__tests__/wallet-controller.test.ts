@@ -69,7 +69,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/credit`)
 				.send({ amount: 50 });
 			expect(res.status).toBe(201);
-			expect(res.body).toEqual({ balance: 50 });
+			expect(res.body).toEqual({ balance: 50, requestId: expect.any(String) });
 		});
 
 		it('returns 200 and updated balance for existing wallet', async () => {
@@ -80,7 +80,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/credit`)
 				.send({ amount: 5 });
 			expect(res.status).toBe(200);
-			expect(res.body).toEqual({ balance: 15 });
+			expect(res.body).toEqual({ balance: 15, requestId: expect.any(String) });
 		});
 
 		it('returns 400 for invalid wallet id', async () => {
@@ -109,7 +109,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/debit`)
 				.send({ amount: 5 });
 			expect(res.status).toBe(200);
-			expect(res.body).toEqual({ balance: 15 });
+			expect(res.body).toEqual({ balance: 15, requestId: expect.any(String) });
 		});
 
 		it('returns 400 and message for insufficient funds', async () => {

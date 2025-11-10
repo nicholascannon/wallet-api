@@ -76,7 +76,7 @@ export class WalletController implements Controller {
 			source: req.source,
 		});
 
-		return res.status(200).json({ balance });
+		return res.status(200).json({ balance, requestId: req.requestId });
 	};
 
 	private readonly creditSchema = z.object({
@@ -101,6 +101,6 @@ export class WalletController implements Controller {
 
 		return res
 			.status(created ? 201 : 200)
-			.json({ balance: transaction.balance });
+			.json({ balance: transaction.balance, requestId: req.requestId });
 	};
 }
