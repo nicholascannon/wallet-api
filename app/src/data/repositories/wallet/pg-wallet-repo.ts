@@ -35,6 +35,8 @@ export class PgWalletRepo implements WalletRepository {
 				balance: transaction.balance.toString(),
 				amount: transaction.amount.toString(),
 				version: transaction.version.toString(),
+				type: transaction.type,
+				metadata: transaction.metadata,
 			});
 		} catch (error) {
 			// Check if it's a unique constraint violation (stale version)

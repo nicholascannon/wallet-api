@@ -1,11 +1,18 @@
 import {
 	bigserial,
+	jsonb,
 	numeric,
+	pgEnum,
 	pgTable,
 	timestamp,
 	unique,
 	uuid,
 } from 'drizzle-orm/pg-core';
+
+export const transactionTypeEnum = pgEnum('transaction_type', [
+	'CREDIT',
+	'DEBIT',
+]);
 
 export const transactionsTable = pgTable(
 	'transactions',
@@ -16,6 +23,8 @@ export const transactionsTable = pgTable(
 		amount: numeric({ precision: 20, scale: 2 }).notNull(),
 		created: timestamp().notNull().defaultNow(),
 		version: numeric({ precision: 20, scale: 0 }).notNull(), // For optimistic locking
+		metadata: jsonb().notNull().default({}),
+		type: transactionTypeEnum('type').notNull(),
 	},
 	(table) => {
 		return [

@@ -38,6 +38,7 @@ describe('WalletService', () => {
 				amount: 42,
 				version: 1,
 				created: new Date(),
+				type: 'CREDIT',
 			};
 			await repo.saveTransaction(transaction);
 
@@ -65,6 +66,7 @@ describe('WalletService', () => {
 				amount: 30,
 				version: 1,
 				created: new Date(),
+				type: 'CREDIT',
 			};
 			await repo.saveTransaction(transaction);
 
@@ -95,6 +97,7 @@ describe('WalletService', () => {
 				amount: 15,
 				version: 1,
 				created: new Date(),
+				type: 'CREDIT',
 			};
 			await repo.saveTransaction(transaction);
 

@@ -4,6 +4,10 @@ export interface Transaction {
 	amount: number;
 	version: number;
 	created: Date;
+	type: 'CREDIT' | 'DEBIT';
+	metadata?:
+		| Record<string, string | number | boolean | null | undefined>
+		| undefined;
 }
 
 export interface Wallet {

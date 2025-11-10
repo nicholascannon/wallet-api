@@ -17,7 +17,11 @@ export class WalletService {
 		return wallet ?? createWallet(walletId);
 	}
 
-	public async debit(walletId: string, amount: number): Promise<Transaction> {
+	public async debit(
+		walletId: string,
+		amount: number,
+		metadata?: Transaction['metadata'],
+	): Promise<Transaction> {
 		if (amount < 0) {
 			throw new InvalidDebitAmountError(amount);
 		}
@@ -35,6 +39,8 @@ export class WalletService {
 				amount,
 				version: wallet.version + 1,
 				created: new Date(),
+				type: 'DEBIT',
+				metadata,
 			};
 
 			await this.repo.saveTransaction(transaction);
@@ -45,6 +51,7 @@ export class WalletService {
 	public async credit(
 		walletId: string,
 		amount: number,
+		metadata?: Transaction['metadata'],
 	): Promise<{ created: boolean; transaction: Transaction }> {
 		return this.withRetry(async () => {
 			const fetchedWallet = await this.repo.getWallet(walletId);
@@ -59,6 +66,8 @@ export class WalletService {
 				amount,
 				version: wallet.version + 1,
 				created: new Date(),
+				type: 'CREDIT',
+				metadata,
 			};
 
 			await this.repo.saveTransaction(transaction);

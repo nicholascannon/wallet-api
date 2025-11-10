@@ -26,32 +26,26 @@ export class WalletController implements Controller {
 
 	private errorHandler: ErrorRequestHandler = (error, _req, res, next) => {
 		if (error instanceof InsufficientFundsError) {
-			return res
-				.status(400)
-				.json({
-					message: error.message,
-					error: 'INSUFFICIENT_FUNDS',
-					availableBalance: error.availableBalance,
-					requestedAmount: error.requestedAmount,
-				});
+			return res.status(400).json({
+				message: error.message,
+				error: 'INSUFFICIENT_FUNDS',
+				availableBalance: error.availableBalance,
+				requestedAmount: error.requestedAmount,
+			});
 		}
 		if (error instanceof InvalidDebitAmountError) {
-			return res
-				.status(400)
-				.json({
-					message: error.message,
-					error: 'INVALID_DEBIT_AMOUNT',
-					amount: error.amount,
-				});
+			return res.status(400).json({
+				message: error.message,
+				error: 'INVALID_DEBIT_AMOUNT',
+				amount: error.amount,
+			});
 		}
 		if (error instanceof WalletNotFoundError) {
-			return res
-				.status(404)
-				.json({
-					message: error.message,
-					error: 'WALLET_NOT_FOUND',
-					walletId: error.walletId,
-				});
+			return res.status(404).json({
+				message: error.message,
+				error: 'WALLET_NOT_FOUND',
+				walletId: error.walletId,
+			});
 		}
 
 		return next(error);
@@ -77,7 +71,10 @@ export class WalletController implements Controller {
 			amount: req.body.amount,
 		});
 
-		const { balance } = await this.walletService.debit(walletId, amount);
+		const { balance } = await this.walletService.debit(walletId, amount, {
+			requestId: req.requestId,
+			source: req.source,
+		});
 
 		return res.status(200).json({ balance });
 	};
@@ -96,6 +93,10 @@ export class WalletController implements Controller {
 		const { transaction, created } = await this.walletService.credit(
 			walletId,
 			amount,
+			{
+				requestId: req.requestId,
+				source: req.source,
+			},
 		);
 
 		return res
