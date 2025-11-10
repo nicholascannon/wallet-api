@@ -71,12 +71,18 @@ export class WalletController implements Controller {
 			amount: req.body.amount,
 		});
 
-		const { balance } = await this.walletService.debit(walletId, amount, {
-			requestId: req.requestId,
-			source: req.source,
-		});
+		const { balance, transactionId } = await this.walletService.debit(
+			walletId,
+			amount,
+			{
+				requestId: req.requestId,
+				source: req.source,
+			},
+		);
 
-		return res.status(200).json({ balance, requestId: req.requestId });
+		return res
+			.status(200)
+			.json({ balance, requestId: req.requestId, transactionId });
 	};
 
 	private readonly creditSchema = z.object({
@@ -101,6 +107,10 @@ export class WalletController implements Controller {
 
 		return res
 			.status(created ? 201 : 200)
-			.json({ balance: transaction.balance, requestId: req.requestId });
+			.json({
+				balance: transaction.balance,
+				requestId: req.requestId,
+				transactionId: transaction.transactionId,
+			});
 	};
 }

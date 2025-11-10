@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import { LOGGER } from '../../lib/logger.js';
 import {
@@ -35,6 +36,7 @@ export class WalletService {
 			const newBalance = debit(wallet, amount);
 			const transaction: Transaction = {
 				walletId,
+				transactionId: randomUUID(),
 				balance: newBalance,
 				amount,
 				version: wallet.version + 1,
@@ -62,6 +64,7 @@ export class WalletService {
 			const newBalance = credit(wallet, amount);
 			const transaction: Transaction = {
 				walletId,
+				transactionId: randomUUID(),
 				balance: newBalance,
 				amount,
 				version: wallet.version + 1,

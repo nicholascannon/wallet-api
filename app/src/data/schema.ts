@@ -19,12 +19,13 @@ export const transactionsTable = pgTable(
 	{
 		id: bigserial({ mode: 'bigint' }).primaryKey(),
 		wallet_id: uuid().notNull(),
+		transaction_id: uuid().notNull().unique(),
+		type: transactionTypeEnum('type').notNull(),
 		balance: numeric({ precision: 20, scale: 2 }).notNull(),
 		amount: numeric({ precision: 20, scale: 2 }).notNull(),
 		created: timestamp().notNull().defaultNow(),
 		version: numeric({ precision: 20, scale: 0 }).notNull(), // For optimistic locking
 		metadata: jsonb().notNull().default({}),
-		type: transactionTypeEnum('type').notNull(),
 	},
 	(table) => {
 		return [

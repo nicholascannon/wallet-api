@@ -34,6 +34,7 @@ describe('WalletService', () => {
 		it('returns the correct balance for an existing wallet', async () => {
 			const transaction: Transaction = {
 				walletId: WALLET_ID,
+				transactionId: 'test-transaction-id',
 				balance: 42,
 				amount: 42,
 				version: 1,
@@ -62,6 +63,7 @@ describe('WalletService', () => {
 		it('debits the wallet and returns the new balance', async () => {
 			const transaction: Transaction = {
 				walletId: WALLET_ID,
+				transactionId: 'test-transaction-id',
 				balance: 100,
 				amount: 30,
 				version: 1,
@@ -93,6 +95,7 @@ describe('WalletService', () => {
 		it('credits an existing wallet and returns the new balance', async () => {
 			const transaction: Transaction = {
 				walletId: WALLET_ID,
+				transactionId: 'test-transaction-id',
 				balance: 20,
 				amount: 15,
 				version: 1,
