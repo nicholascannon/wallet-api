@@ -7,10 +7,12 @@ export const LOGGER = winston.createLogger({
 	format:
 		CONFIG.env === 'development'
 			? winston.format.combine(
+					winston.format.errors({ stack: true }),
 					winston.format.colorize(),
 					winston.format.simple(),
 				)
 			: winston.format.combine(
+					winston.format.errors({ stack: true }),
 					winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
 					winston.format.json(),
 				),

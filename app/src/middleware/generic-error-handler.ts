@@ -14,6 +14,10 @@ export const genericErrorHandler: ErrorRequestHandler = (
 		return res.status(413).json({ message: 'Request body too large' });
 	}
 
-	LOGGER.error({ error });
+	if (error instanceof Error) {
+		LOGGER.error('Error', { stack: error.stack });
+	} else {
+		LOGGER.error('Error', { error });
+	}
 	return res.status(500).json({ message: 'Internal server error' });
 };
