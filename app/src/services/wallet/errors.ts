@@ -1,12 +1,15 @@
 export class WalletNotFoundError extends Error {
-	constructor(walletId: string) {
+	constructor(public readonly walletId: string) {
 		super(`Wallet not found: ${walletId}`);
 		this.name = 'WalletNotFoundError';
 	}
 }
 
 export class InsufficientFundsError extends Error {
-	constructor(availableBalance: number, requestedAmount: number) {
+	constructor(
+		public readonly availableBalance: number,
+		public readonly requestedAmount: number,
+	) {
 		super(
 			`Insufficient funds. Available: ${availableBalance}, Requested: ${requestedAmount}`,
 		);
@@ -15,14 +18,14 @@ export class InsufficientFundsError extends Error {
 }
 
 export class InvalidDebitAmountError extends Error {
-	constructor(amount: number) {
+	constructor(public readonly amount: number) {
 		super(`Debit amount cannot be less than 0: ${amount}`);
 		this.name = 'InvalidDebitAmountError';
 	}
 }
 
 export class ConcurrentModificationError extends Error {
-	constructor(walletId: string) {
+	constructor(public readonly walletId: string) {
 		super(
 			`Wallet ${walletId} was modified by another transaction. Please retry.`,
 		);
