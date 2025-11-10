@@ -7,6 +7,13 @@ export const genericErrorHandler: ErrorRequestHandler = (
 	res,
 	_next,
 ) => {
+	if (typeof error === 'object') {
+		error.requestId = req.requestId;
+		LOGGER.error('Error', error);
+	} else {
+		LOGGER.error('Error', { error, requestId: req.requestId });
+	}
+
 	if ('type' in error && error.type === 'entity.parse.failed') {
 		return res
 			.status(400)
@@ -18,11 +25,6 @@ export const genericErrorHandler: ErrorRequestHandler = (
 			.json({ message: 'Request body too large', requestId: req.requestId });
 	}
 
-	if (error instanceof Error) {
-		LOGGER.error('Error', { stack: error.stack, requestId: req.requestId });
-	} else {
-		LOGGER.error('Error', { error, requestId: req.requestId });
-	}
 	return res
 		.status(500)
 		.json({ message: 'Internal server error', requestId: req.requestId });

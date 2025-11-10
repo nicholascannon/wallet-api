@@ -15,7 +15,9 @@ describe('genericErrorHandler middleware', () => {
 	let next: any;
 
 	beforeEach(() => {
-		req = {};
+		req = {
+			requestId: 'test-request-id',
+		};
 		res = {
 			status: vi.fn().mockReturnThis(),
 			json: vi.fn(),
@@ -29,12 +31,17 @@ describe('genericErrorHandler middleware', () => {
 
 		genericErrorHandler(error, req, res, next);
 
-		expect(LOGGER.error).toHaveBeenCalledWith('Error', {
-			stack: error.stack,
-		});
+		expect(LOGGER.error).toHaveBeenCalledWith(
+			'Error',
+			expect.objectContaining({
+				message: 'Something went wrong',
+				requestId: 'test-request-id',
+			}),
+		);
 		expect(res.status).toHaveBeenCalledWith(500);
 		expect(res.json).toHaveBeenCalledWith({
 			message: 'Internal server error',
+			requestId: 'test-request-id',
 		});
 		expect(next).not.toHaveBeenCalled();
 	});
@@ -45,11 +52,15 @@ describe('genericErrorHandler middleware', () => {
 
 			genericErrorHandler(error, req, res, next);
 
+			expect(LOGGER.error).toHaveBeenCalledWith('Error', {
+				type: 'entity.parse.failed',
+				requestId: 'test-request-id',
+			});
 			expect(res.status).toHaveBeenCalledWith(400);
 			expect(res.json).toHaveBeenCalledWith({
 				message: 'Invalid request body',
+				requestId: 'test-request-id',
 			});
-			expect(LOGGER.error).not.toHaveBeenCalled();
 			expect(next).not.toHaveBeenCalled();
 		});
 
@@ -58,11 +69,15 @@ describe('genericErrorHandler middleware', () => {
 
 			genericErrorHandler(error, req, res, next);
 
+			expect(LOGGER.error).toHaveBeenCalledWith('Error', {
+				type: 'entity.too.large',
+				requestId: 'test-request-id',
+			});
 			expect(res.status).toHaveBeenCalledWith(413);
 			expect(res.json).toHaveBeenCalledWith({
 				message: 'Request body too large',
+				requestId: 'test-request-id',
 			});
-			expect(LOGGER.error).not.toHaveBeenCalled();
 			expect(next).not.toHaveBeenCalled();
 		});
 
@@ -71,10 +86,14 @@ describe('genericErrorHandler middleware', () => {
 
 			genericErrorHandler(error, req, res, next);
 
-			expect(LOGGER.error).toHaveBeenCalledWith('Error', { error });
+			expect(LOGGER.error).toHaveBeenCalledWith('Error', {
+				type: 'some.other.type',
+				requestId: 'test-request-id',
+			});
 			expect(res.status).toHaveBeenCalledWith(500);
 			expect(res.json).toHaveBeenCalledWith({
 				message: 'Internal server error',
+				requestId: 'test-request-id',
 			});
 			expect(next).not.toHaveBeenCalled();
 		});
