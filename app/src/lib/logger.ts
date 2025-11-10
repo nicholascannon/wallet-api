@@ -23,6 +23,9 @@ export const loggingMiddleware = expressWinston.logger({
 	winstonInstance: LOGGER,
 	headerBlacklist: ['authorization', 'cookie'],
 	ignoreRoute: (req) => req.path === '/healthcheck',
+	dynamicMeta: (req, _res) => ({
+		requestId: req.requestId,
+	}),
 });
 
 export const setupProcessLogging = () => {

@@ -73,7 +73,7 @@ export class WalletService {
 			await this.repo.saveTransaction(transaction);
 
 			if (created) {
-				LOGGER.info('Created new wallet', { walletId });
+				LOGGER.info('Created new wallet', { walletId, metadata });
 			}
 
 			return { transaction, created };
