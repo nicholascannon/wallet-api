@@ -4,6 +4,7 @@ import { HealthController } from './controllers/health-controller.js';
 import { WalletController } from './controllers/wallet-controller.js';
 import { loggingMiddleware } from './lib/logger.js';
 import { genericErrorHandler } from './middleware/generic-error-handler.js';
+import { requestIdMiddleware } from './middleware/request-id.js';
 import { zodErrorHandler } from './middleware/zod-error-handler.js';
 import type { HealthRepository } from './services/health/health-repository.js';
 import type { WalletRepository } from './services/wallet/repository.js';
@@ -20,6 +21,7 @@ export function createApp({
 }): Application {
 	const app = express();
 
+	app.use(requestIdMiddleware);
 	if (enableLogging) app.use(loggingMiddleware);
 	app.use(
 		express.json({
