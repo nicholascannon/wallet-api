@@ -1,0 +1,22 @@
+meta {
+  name: Credit
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://{{host}}/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "amount": 1000
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

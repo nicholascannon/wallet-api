@@ -1,0 +1,16 @@
+meta {
+  name: Balance
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://{{host}}/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Debit
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://{{host}}/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+      "amount": 100000000
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
