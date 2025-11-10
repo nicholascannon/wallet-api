@@ -6,17 +6,16 @@
 	},
 	"item": [
 		{
-			"name": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
+			"name": "/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
+					"raw": "http://{{host}}/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9",
 					"protocol": "http",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8000",
 					"path": [
 						"v1",
 						"wallet",
@@ -27,13 +26,13 @@
 			"response": []
 		},
 		{
-			"name": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit",
+			"name": "/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit",
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"amount\": 100000000\n}",
+					"raw": "{\n    \"amount\": 1000\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -41,12 +40,11 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit",
+					"raw": "http://{{host}}/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit",
 					"protocol": "http",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8000",
 					"path": [
 						"v1",
 						"wallet",
@@ -58,7 +56,7 @@
 			"response": []
 		},
 		{
-			"name": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit",
+			"name": "/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit",
 			"request": {
 				"method": "POST",
 				"header": [],
@@ -72,12 +70,11 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit",
+					"raw": "http://{{host}}/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/debit",
 					"protocol": "http",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8000",
 					"path": [
 						"v1",
 						"wallet",
@@ -87,6 +84,52 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "/v1/health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/v1/health",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"v1",
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "localhost:8000",
+			"type": "default"
 		}
 	]
 }
