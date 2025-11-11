@@ -4,6 +4,13 @@ import { WalletNotFoundError } from '../errors.js';
 import type { Transaction } from '../types.js';
 import { WalletService } from '../wallet-service.js';
 
+const TRANSACTION_ID = '0-0-0-0-0';
+
+vi.mock('node:crypto', () => ({
+	...vi.importActual('node:crypto'),
+	randomUUID: vi.fn(() => TRANSACTION_ID),
+}));
+
 describe('WalletService', () => {
 	let repo: WalletMemoryRepo;
 	let service: WalletService;
@@ -12,6 +19,7 @@ describe('WalletService', () => {
 	beforeEach(() => {
 		repo = new WalletMemoryRepo();
 		service = new WalletService(repo);
+
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date('2025-01-01T00:00:00.000Z'));
 	});
@@ -72,24 +80,44 @@ describe('WalletService', () => {
 			};
 			await repo.saveTransaction(transaction);
 
-			const result = await service.debit(WALLET_ID, 30);
-			expect(result.balance).toBe(70);
-			expect(result.version).toBe(2);
-			expect(result.walletId).toBe(WALLET_ID);
-			const wallet = await service.getWallet(WALLET_ID);
-			expect(wallet?.balance).toBe(70);
+			const result = await service.debit(WALLET_ID, 30, {
+				requestId: 'test-request-id',
+				source: 'test-source',
+			});
+
+			expect(result).toEqual({
+				walletId: WALLET_ID,
+				transactionId: TRANSACTION_ID,
+				balance: 70,
+				amount: 30,
+				version: 2,
+				created: new Date('2025-01-01T00:00:00.000Z'),
+				type: 'DEBIT',
+				metadata: { requestId: 'test-request-id', source: 'test-source' },
+			});
 		});
 	});
 
 	describe('credit', () => {
 		it('creates a new wallet if it does not exist and credits the amount', async () => {
-			const result = await service.credit(WALLET_ID, 50);
-			expect(result.created).toBe(true);
-			expect(result.transaction.balance).toBe(50);
-			expect(result.transaction.version).toBe(1);
-			expect(result.transaction.walletId).toBe(WALLET_ID);
-			const wallet = await service.getWallet(WALLET_ID);
-			expect(wallet?.balance).toBe(50);
+			const result = await service.credit(WALLET_ID, 50, {
+				requestId: 'test-request-id',
+				source: 'test-source',
+			});
+
+			expect(result).toEqual({
+				created: true,
+				transaction: {
+					balance: 50,
+					amount: 50,
+					version: 1,
+					walletId: WALLET_ID,
+					transactionId: TRANSACTION_ID,
+					created: new Date('2025-01-01T00:00:00.000Z'),
+					type: 'CREDIT',
+					metadata: { requestId: 'test-request-id', source: 'test-source' },
+				},
+			});
 		});
 
 		it('credits an existing wallet and returns the new balance', async () => {
@@ -104,13 +132,24 @@ describe('WalletService', () => {
 			};
 			await repo.saveTransaction(transaction);
 
-			const result = await service.credit(WALLET_ID, 15);
-			expect(result.created).toBe(false);
-			expect(result.transaction.balance).toBe(35);
-			expect(result.transaction.version).toBe(2);
-			expect(result.transaction.walletId).toBe(WALLET_ID);
-			const wallet = await service.getWallet(WALLET_ID);
-			expect(wallet?.balance).toBe(35);
+			const result = await service.credit(WALLET_ID, 15, {
+				requestId: 'test-request-id',
+				source: 'test-source',
+			});
+
+			expect(result).toEqual({
+				created: false,
+				transaction: {
+					balance: 35,
+					amount: 15,
+					version: 2,
+					walletId: WALLET_ID,
+					transactionId: TRANSACTION_ID,
+					created: new Date('2025-01-01T00:00:00.000Z'),
+					type: 'CREDIT',
+					metadata: { requestId: 'test-request-id', source: 'test-source' },
+				},
+			});
 		});
 	});
 });
