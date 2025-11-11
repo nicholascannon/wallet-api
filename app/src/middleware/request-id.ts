@@ -10,7 +10,6 @@ declare global {
 	}
 }
 
-// TODO: should write some tests for this middleware
 export function requestIdMiddleware(
 	req: Request,
 	_res: Response,
