@@ -6,17 +6,28 @@ import { HealthCheckMemoryRepo } from '../../data/repositories/health/health-che
 import { WalletMemoryRepo } from '../../data/repositories/wallet/wallet-memory-repo.js';
 
 const NOW = new Date('2025-01-01T00:00:00.000Z');
+const REQUEST_ID = 'test-request-id';
+const SOURCE = 'test-source';
+const TRANSACTION_ID = '0-0-0-0-0';
+
+vi.mock('node:crypto', () => ({
+	...vi.importActual('node:crypto'),
+	randomUUID: vi.fn(() => TRANSACTION_ID),
+}));
 
 describe('WalletController', () => {
 	let app: Application;
+	let walletRepo: WalletMemoryRepo;
 	const walletId = '123e4567-e89b-12d3-a456-426614174000';
 
 	beforeEach(() => {
+		walletRepo = new WalletMemoryRepo();
 		app = createApp({
-			walletRepo: new WalletMemoryRepo(),
+			walletRepo,
 			healthCheckRepo: new HealthCheckMemoryRepo(),
 			enableLogging: false,
 		});
+
 		vi.useFakeTimers({
 			toFake: ['Date'], // supertest depends on other timers
 		});
@@ -67,12 +78,14 @@ describe('WalletController', () => {
 		it('returns 201 and balance for new wallet', async () => {
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/credit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
 				.send({ amount: 50 });
 			expect(res.status).toBe(201);
 			expect(res.body).toEqual({
 				balance: 50,
-				requestId: expect.any(String),
-				transactionId: expect.any(String),
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
 			});
 		});
 
@@ -82,12 +95,14 @@ describe('WalletController', () => {
 				.send({ amount: 10 });
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/credit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
 				.send({ amount: 5 });
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
 				balance: 15,
-				requestId: expect.any(String),
-				transactionId: expect.any(String),
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
 			});
 		});
 
@@ -115,12 +130,14 @@ describe('WalletController', () => {
 				.send({ amount: 20 });
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/debit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
 				.send({ amount: 5 });
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
 				balance: 15,
-				requestId: expect.any(String),
-				transactionId: expect.any(String),
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
 			});
 		});
 
@@ -131,6 +148,8 @@ describe('WalletController', () => {
 				.send({ amount: 5 });
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/debit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
 				.send({ amount: 10 });
 			expect(res.status).toBe(400);
 			expect(res.body).toEqual({
