@@ -1,6 +1,7 @@
 import { desc, eq } from 'drizzle-orm';
 import { DrizzleQueryError } from 'drizzle-orm/errors';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { LOGGER } from '../../../lib/logger.js';
 import { ConcurrentModificationError } from '../../../services/wallet/errors.js';
 import type { WalletRepository } from '../../../services/wallet/repository.js';
 import type { Transaction, Wallet } from '../../../services/wallet/types.js';
@@ -49,6 +50,12 @@ export class PgWalletRepo implements WalletRepository {
 					'code' in cause &&
 					cause.code === '23505'
 				) {
+					LOGGER.warn('Concurrent modification error', {
+						walletId: transaction.walletId,
+						transactionId: transaction.transactionId,
+						version: transaction.version,
+						requestId: transaction.metadata?.requestId,
+					});
 					throw new ConcurrentModificationError(transaction.walletId);
 				}
 			}
