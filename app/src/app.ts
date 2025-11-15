@@ -1,5 +1,7 @@
+import cors from 'cors';
 import type { Application } from 'express';
 import express from 'express';
+import { CONFIG } from './config/env.js';
 import { HealthController } from './controllers/health-controller.js';
 import { WalletController } from './controllers/wallet-controller.js';
 import { loggingMiddleware } from './lib/logger.js';
@@ -22,6 +24,11 @@ export function createApp({
 	const app = express();
 
 	app.use(requestIdMiddleware);
+	app.use(
+		cors({
+			origin: CONFIG.cors.hosts,
+		}),
+	);
 	if (enableLogging) app.use(loggingMiddleware);
 	app.use(
 		express.json({

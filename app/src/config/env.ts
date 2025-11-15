@@ -4,6 +4,12 @@ export const CONFIG = z
 	.object({
 		env: z.enum(['development', 'production', 'test']),
 		port: z.string().transform(Number),
+		cors: z.object({
+			hosts: z
+				.string()
+				.transform((val) => val.split(',').map((s) => s.trim()))
+				.pipe(z.array(z.string())),
+		}),
 		db: z.object({
 			host: z.string(),
 			port: z.string().transform(Number),
@@ -15,6 +21,9 @@ export const CONFIG = z
 	.parse({
 		env: process.env.NODE_ENV,
 		port: process.env.PORT,
+		cors: {
+			hosts: process.env.CORS_HOSTS,
+		},
 		db: {
 			host: process.env.DB_HOST,
 			port: process.env.DB_PORT,
