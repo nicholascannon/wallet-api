@@ -7,5 +7,8 @@ beforeEach(() => {
 vi.mock('../config/env.js', () => ({
 	CONFIG: {
 		env: 'test',
+		cors: {
+			hosts: [],
+		},
 	},
 }));
