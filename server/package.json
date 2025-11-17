@@ -3,7 +3,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "rm -rf ./dist && tsc",
-		"dev": "tsx watch src/main.ts",
+		"start": "tsx watch src/main.ts",
 		"lint": "biome check .",
 		"lint:fix": "biome check --write .",
 		"db:migrate": "drizzle-kit migrate",
