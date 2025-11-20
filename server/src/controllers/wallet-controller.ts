@@ -57,20 +57,11 @@ export class WalletController implements Controller {
 		const walletId = this.getWalletSchema.parse(req.params.id);
 		const wallet = await this.walletService.getWallet(walletId);
 
-		return res.json(
-			wallet
-				? {
-						id: wallet.id,
-						balance: wallet.balance.toFixed(2),
-						updated: wallet.updated,
-					}
-				: // don't expose if this walletID exists or not
-					{
-						id: walletId,
-						balance: Number(0).toFixed(2),
-						updated: new Date(),
-					},
-		);
+		return res.json({
+			id: wallet.id,
+			balance: wallet.balance.toFixed(2),
+			updated: wallet.updated,
+		});
 	};
 
 	private readonly debitSchema = z.object({

@@ -13,7 +13,7 @@ import { createWallet, credit, debit } from './wallet-operations.js';
 export class WalletService {
 	constructor(private readonly repo: WalletRepository) {}
 
-	public async getWallet(walletId: string): Promise<Wallet | undefined> {
+	public async getWallet(walletId: string): Promise<Wallet> {
 		const wallet = await this.repo.getWallet(walletId);
 		return wallet ?? createWallet(walletId);
 	}
