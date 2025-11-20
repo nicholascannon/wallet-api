@@ -29,15 +29,15 @@ export class WalletController implements Controller {
 			return res.status(400).json({
 				message: error.message,
 				error: 'INSUFFICIENT_FUNDS',
-				availableBalance: error.availableBalance,
-				requestedAmount: error.requestedAmount,
+				availableBalance: error.availableBalance.toString(),
+				requestedAmount: error.requestedAmount.toString(),
 			});
 		}
 		if (error instanceof InvalidDebitAmountError) {
 			return res.status(400).json({
 				message: error.message,
 				error: 'INVALID_DEBIT_AMOUNT',
-				amount: error.amount,
+				amount: error.amount.toString(),
 			});
 		}
 		if (error instanceof WalletNotFoundError) {
@@ -57,7 +57,20 @@ export class WalletController implements Controller {
 		const walletId = this.getWalletSchema.parse(req.params.id);
 		const wallet = await this.walletService.getWallet(walletId);
 
-		return res.json(wallet);
+		return res.json(
+			wallet
+				? {
+						id: wallet.id,
+						balance: wallet.balance.toString(),
+						updated: wallet.updated,
+					}
+				: // don't expose if this walletID exists or not
+					{
+						id: walletId,
+						balance: '0',
+						updated: new Date(),
+					},
+		);
 	};
 
 	private readonly debitSchema = z.object({
@@ -80,9 +93,11 @@ export class WalletController implements Controller {
 			},
 		);
 
-		return res
-			.status(200)
-			.json({ balance, requestId: req.requestId, transactionId });
+		return res.status(200).json({
+			balance: balance.toString(),
+			requestId: req.requestId,
+			transactionId,
+		});
 	};
 
 	private readonly creditSchema = z.object({
@@ -105,12 +120,10 @@ export class WalletController implements Controller {
 			},
 		);
 
-		return res
-			.status(created ? 201 : 200)
-			.json({
-				balance: transaction.balance,
-				requestId: req.requestId,
-				transactionId: transaction.transactionId,
-			});
+		return res.status(created ? 201 : 200).json({
+			balance: transaction.balance.toString(),
+			requestId: req.requestId,
+			transactionId: transaction.transactionId,
+		});
 	};
 }
