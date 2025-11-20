@@ -29,15 +29,15 @@ export class WalletController implements Controller {
 			return res.status(400).json({
 				message: error.message,
 				error: 'INSUFFICIENT_FUNDS',
-				availableBalance: error.availableBalance.toString(),
-				requestedAmount: error.requestedAmount.toString(),
+				availableBalance: error.availableBalance.toFixed(2),
+				requestedAmount: error.requestedAmount.toFixed(2),
 			});
 		}
 		if (error instanceof InvalidDebitAmountError) {
 			return res.status(400).json({
 				message: error.message,
 				error: 'INVALID_DEBIT_AMOUNT',
-				amount: error.amount.toString(),
+				amount: error.amount.toFixed(2),
 			});
 		}
 		if (error instanceof WalletNotFoundError) {
@@ -61,13 +61,13 @@ export class WalletController implements Controller {
 			wallet
 				? {
 						id: wallet.id,
-						balance: wallet.balance.toString(),
+						balance: wallet.balance.toFixed(2),
 						updated: wallet.updated,
 					}
 				: // don't expose if this walletID exists or not
 					{
 						id: walletId,
-						balance: '0',
+						balance: Number(0).toFixed(2),
 						updated: new Date(),
 					},
 		);
@@ -94,7 +94,7 @@ export class WalletController implements Controller {
 		);
 
 		return res.status(200).json({
-			balance: balance.toString(),
+			balance: balance.toFixed(2),
 			requestId: req.requestId,
 			transactionId,
 		});
@@ -121,7 +121,7 @@ export class WalletController implements Controller {
 		);
 
 		return res.status(created ? 201 : 200).json({
-			balance: transaction.balance.toString(),
+			balance: transaction.balance.toFixed(2),
 			requestId: req.requestId,
 			transactionId: transaction.transactionId,
 		});

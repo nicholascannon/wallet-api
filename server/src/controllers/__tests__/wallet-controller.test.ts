@@ -55,7 +55,7 @@ describe('WalletController', () => {
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
 				id: walletId,
-				balance: '0',
+				balance: '0.00',
 				updated: NOW.toISOString(),
 			});
 		});
@@ -70,7 +70,7 @@ describe('WalletController', () => {
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
 				id: walletId,
-				balance: '100',
+				balance: '100.00',
 				updated: NOW.toISOString(),
 			});
 		});
@@ -103,7 +103,7 @@ describe('WalletController', () => {
 			});
 			expect(res.status).toBe(201);
 			expect(res.body).toEqual({
-				balance: '50',
+				balance: '50.00',
 				requestId: REQUEST_ID,
 				transactionId: TRANSACTION_ID,
 			});
@@ -132,7 +132,7 @@ describe('WalletController', () => {
 			});
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
-				balance: '15',
+				balance: '15.00',
 				requestId: REQUEST_ID,
 				transactionId: TRANSACTION_ID,
 			});
@@ -181,7 +181,7 @@ describe('WalletController', () => {
 			});
 			expect(res.status).toBe(200);
 			expect(res.body).toEqual({
-				balance: '15',
+				balance: '15.00',
 				requestId: REQUEST_ID,
 				transactionId: TRANSACTION_ID,
 			});
@@ -203,8 +203,8 @@ describe('WalletController', () => {
 			expect(res.body).toEqual({
 				message: 'Insufficient funds. Available: 5, Requested: 10',
 				error: 'INSUFFICIENT_FUNDS',
-				availableBalance: '5',
-				requestedAmount: '10',
+				availableBalance: '5.00',
+				requestedAmount: '10.00',
 			});
 		});
 
