@@ -1,9 +1,9 @@
-CREATE TYPE "public"."transaction_type" AS ENUM('CREDIT', 'DEBIT');--> statement-breakpoint
-CREATE TABLE "transactions" (
+CREATE TYPE "wallet"."transaction_type" AS ENUM('CREDIT', 'DEBIT');--> statement-breakpoint
+CREATE TABLE "wallet"."transactions" (
 	"id" bigserial PRIMARY KEY NOT NULL,
 	"wallet_id" uuid NOT NULL,
 	"transaction_id" uuid NOT NULL,
-	"type" "transaction_type" NOT NULL,
+	"type" "wallet"."transaction_type" NOT NULL,
 	"balance" numeric(20, 2) NOT NULL,
 	"amount" numeric(20, 2) NOT NULL,
 	"created" timestamp DEFAULT now() NOT NULL,

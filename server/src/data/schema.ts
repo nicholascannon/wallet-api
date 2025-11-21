@@ -2,19 +2,20 @@ import {
 	bigserial,
 	jsonb,
 	numeric,
-	pgEnum,
-	pgTable,
+	pgSchema,
 	timestamp,
 	unique,
 	uuid,
 } from 'drizzle-orm/pg-core';
 
-export const transactionTypeEnum = pgEnum('transaction_type', [
+const walletSchema = pgSchema('wallet');
+
+export const transactionTypeEnum = walletSchema.enum('transaction_type', [
 	'CREDIT',
 	'DEBIT',
 ]);
 
-export const transactionsTable = pgTable(
+export const transactionsTable = walletSchema.table(
 	'transactions',
 	{
 		id: bigserial({ mode: 'bigint' }).primaryKey(),

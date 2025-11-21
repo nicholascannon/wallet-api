@@ -1,12 +1,12 @@
 {
-  "id": "3a74494f-0bc0-4186-9140-445f7888df90",
+  "id": "3e10dbc3-70db-4171-a8d3-ce6b9c7aaf88",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.transactions": {
+    "wallet.transactions": {
       "name": "transactions",
-      "schema": "",
+      "schema": "wallet",
       "columns": {
         "id": {
           "name": "id",
@@ -29,7 +29,7 @@
         "type": {
           "name": "type",
           "type": "transaction_type",
-          "typeSchema": "public",
+          "typeSchema": "wallet",
           "primaryKey": false,
           "notNull": true
         },
@@ -92,9 +92,9 @@
     }
   },
   "enums": {
-    "public.transaction_type": {
+    "wallet.transaction_type": {
       "name": "transaction_type",
-      "schema": "public",
+      "schema": "wallet",
       "values": [
         "CREDIT",
         "DEBIT"
