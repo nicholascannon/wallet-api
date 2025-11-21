@@ -9,7 +9,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: wallet
+      POSTGRES_DB: casino
     ports:
       - 5432:5432
 
@@ -21,7 +21,7 @@ services:
       DB_PASSWORD: postgres
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: wallet
+      DB_NAME: casino
       CORS_HOSTS: http://localhost:5173
     depends_on:
       db:
@@ -37,7 +37,7 @@ services:
       DB_PASSWORD: postgres
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: wallet
+      DB_NAME: casino
       CORS_HOSTS: http://localhost:5173
     ports:
       - 8000:8000
