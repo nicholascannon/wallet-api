@@ -8,6 +8,7 @@ import {
 	uuid,
 } from 'drizzle-orm/pg-core';
 
+// don't export as this is already created by drizzle
 const walletSchema = pgSchema('wallet');
 
 export const transactionTypeEnum = walletSchema.enum('transaction_type', [
