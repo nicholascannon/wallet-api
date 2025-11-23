@@ -67,12 +67,19 @@ export class WalletController implements Controller {
 	private readonly debitSchema = z.object({
 		walletId: z.uuid(),
 		amount: z.number().min(0.01),
+		metadata: z
+			.record(
+				z.string(),
+				z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]),
+			)
+			.optional(),
 	});
 
 	private debit = async (req: Request, res: Response) => {
-		const { walletId, amount } = this.debitSchema.parse({
+		const { walletId, amount, metadata } = this.debitSchema.parse({
 			walletId: req.params.id,
 			amount: req.body.amount,
+			metadata: req.body.metadata,
 		});
 
 		const { balance, transactionId } = await this.walletService.debit(
@@ -81,6 +88,7 @@ export class WalletController implements Controller {
 			{
 				requestId: req.requestId,
 				source: req.source,
+				...metadata,
 			},
 		);
 
@@ -94,12 +102,19 @@ export class WalletController implements Controller {
 	private readonly creditSchema = z.object({
 		walletId: z.uuid(),
 		amount: z.number().min(0.01),
+		metadata: z
+			.record(
+				z.string(),
+				z.union([z.string(), z.number(), z.boolean(), z.null(), z.undefined()]),
+			)
+			.optional(),
 	});
 
 	private credit = async (req: Request, res: Response) => {
-		const { walletId, amount } = this.creditSchema.parse({
+		const { walletId, amount, metadata } = this.creditSchema.parse({
 			walletId: req.params.id,
 			amount: req.body.amount,
+			metadata: req.body.metadata,
 		});
 
 		const { transaction, created } = await this.walletService.credit(
@@ -108,6 +123,7 @@ export class WalletController implements Controller {
 			{
 				requestId: req.requestId,
 				source: req.source,
+				...metadata,
 			},
 		);
 

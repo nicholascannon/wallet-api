@@ -155,13 +155,33 @@ describe('WalletController', () => {
 			expect(res.status).toBe(400);
 			expect(res.body).toHaveProperty('message', 'Invalid request');
 		});
+
+		it('should pass metadata to the transaction', async () => {
+			await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
+				.send({ amount: 10, metadata: { test: 'test' } });
+
+			expect(saveTransactionSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					metadata: { test: 'test', requestId: REQUEST_ID, source: SOURCE },
+				}),
+			);
+		});
 	});
 
 	describe('POST /wallet/:id/debit', () => {
 		it('returns 200 and debited balance for valid request', async () => {
-			await request(app)
-				.post(`/v1/wallet/${walletId}/credit`)
-				.send({ amount: 20 });
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 20,
+				amount: 20,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
 
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/debit`)
@@ -189,9 +209,15 @@ describe('WalletController', () => {
 
 		it('returns 400 and message for insufficient funds', async () => {
 			// Credit wallet with 5, then try to debit 10
-			await request(app)
-				.post(`/v1/wallet/${walletId}/credit`)
-				.send({ amount: 5 });
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 5,
+				amount: 5,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
 
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/debit`)
@@ -240,6 +266,30 @@ describe('WalletController', () => {
 
 			expect(res.status).toBe(400);
 			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('should pass metadata to the transaction', async () => {
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 20,
+				amount: 20,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
+
+			await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
+				.send({ amount: 10, metadata: { test: 'test' } });
+
+			expect(saveTransactionSpy).toHaveBeenCalledWith(
+				expect.objectContaining({
+					metadata: { test: 'test', requestId: REQUEST_ID, source: SOURCE },
+				}),
+			);
 		});
 	});
 });
