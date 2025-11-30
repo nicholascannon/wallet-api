@@ -1,5 +1,8 @@
-import type { WalletRepository } from '../../../services/wallet/repository.js';
-import type { Transaction, Wallet } from '../../../services/wallet/types.js';
+import type { WalletRepository } from '../../../services/wallet/wallet-repository.js';
+import type {
+	Transaction,
+	Wallet,
+} from '../../../services/wallet/wallet-types.js';
 
 export class WalletMemoryRepo implements WalletRepository {
 	private transactions = new Map<string, Transaction>();

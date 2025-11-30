@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { InsufficientFundsError, InvalidDebitAmountError } from '../errors.js';
+import {
+	InsufficientFundsError,
+	InvalidDebitAmountError,
+} from '../wallet-errors.js';
 import { createWallet, credit, debit } from '../wallet-operations.js';
 
 describe('Wallet operations', () => {

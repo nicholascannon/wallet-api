@@ -5,10 +5,10 @@ import {
 	ConcurrentModificationError,
 	InvalidDebitAmountError,
 	WalletNotFoundError,
-} from './errors.js';
-import type { WalletRepository } from './repository.js';
-import type { Transaction, Wallet } from './types.js';
+} from './wallet-errors.js';
 import { createWallet, credit, debit } from './wallet-operations.js';
+import type { WalletRepository } from './wallet-repository.js';
+import type { Transaction, Wallet } from './wallet-types.js';
 
 export class WalletService {
 	constructor(private readonly repo: WalletRepository) {}

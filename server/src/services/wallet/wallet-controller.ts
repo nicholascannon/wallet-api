@@ -10,7 +10,7 @@ import {
 	InsufficientFundsError,
 	InvalidDebitAmountError,
 	WalletNotFoundError,
-} from './errors.js';
+} from './wallet-errors.js';
 import type { WalletService } from './wallet-service.js';
 
 export class WalletController implements Controller {

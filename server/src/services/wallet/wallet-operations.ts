@@ -1,6 +1,9 @@
 import { Decimal } from 'decimal.js';
-import { InsufficientFundsError, InvalidDebitAmountError } from './errors.js';
-import type { Wallet } from './types.js';
+import {
+	InsufficientFundsError,
+	InvalidDebitAmountError,
+} from './wallet-errors.js';
+import type { Wallet } from './wallet-types.js';
 
 export function debit(wallet: Wallet, transactionAmount: number): number {
 	const balance = new Decimal(wallet.balance);

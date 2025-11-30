@@ -8,8 +8,8 @@ import { requestIdMiddleware } from './middleware/request-id.js';
 import { zodErrorHandler } from './middleware/zod-error-handler.js';
 import { HealthController } from './services/health/health-controller.js';
 import type { HealthRepository } from './services/health/health-repository.js';
-import type { WalletRepository } from './services/wallet/repository.js';
 import { WalletController } from './services/wallet/wallet-controller.js';
+import type { WalletRepository } from './services/wallet/wallet-repository.js';
 import { WalletService } from './services/wallet/wallet-service.js';
 
 export function createApp({
