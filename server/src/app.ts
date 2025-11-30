@@ -2,14 +2,14 @@ import cors from 'cors';
 import type { Application } from 'express';
 import express from 'express';
 import { CONFIG } from './config/env.js';
-import { HealthController } from './controllers/health-controller.js';
-import { WalletController } from './controllers/wallet-controller.js';
 import { loggingMiddleware } from './lib/logger.js';
 import { genericErrorHandler } from './middleware/generic-error-handler.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
 import { zodErrorHandler } from './middleware/zod-error-handler.js';
+import { HealthController } from './services/health/health-controller.js';
 import type { HealthRepository } from './services/health/health-repository.js';
 import type { WalletRepository } from './services/wallet/repository.js';
+import { WalletController } from './services/wallet/wallet-controller.js';
 import { WalletService } from './services/wallet/wallet-service.js';
 
 export function createApp({
@@ -38,6 +38,7 @@ export function createApp({
 	);
 
 	const walletService = new WalletService(walletRepo);
+
 	const walletController = new WalletController(walletService);
 	const healthController = new HealthController(healthCheckRepo);
 

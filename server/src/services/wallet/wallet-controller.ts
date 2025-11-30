@@ -5,13 +5,13 @@ import {
 	Router,
 } from 'express';
 import * as z from 'zod';
-import type { Controller } from '../lib/controller.js';
+import type { Controller } from '../../lib/controller.js';
 import {
 	InsufficientFundsError,
 	InvalidDebitAmountError,
 	WalletNotFoundError,
-} from '../services/wallet/errors.js';
-import type { WalletService } from '../services/wallet/wallet-service.js';
+} from './errors.js';
+import type { WalletService } from './wallet-service.js';
 
 export class WalletController implements Controller {
 	public readonly router: Router;
