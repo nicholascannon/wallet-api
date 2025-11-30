@@ -1,6 +1,6 @@
 import { type Request, type Response, Router } from 'express';
-import type { Controller } from '../lib/controller.js';
-import type { HealthRepository } from '../services/health/health-repository.js';
+import type { Controller } from '../../lib/controller.js';
+import type { HealthRepository } from './health-repository.js';
 
 export class HealthController implements Controller {
 	public readonly router: Router;
