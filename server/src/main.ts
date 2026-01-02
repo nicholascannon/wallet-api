@@ -9,6 +9,22 @@ import { PgWalletRepo } from './services/wallet/repositories/pg-wallet-repo.js';
 
 setupProcessLogging();
 
+LOGGER.info('CONFIG', {
+	config: {
+		env: CONFIG.env,
+		port: CONFIG.port,
+		cors: CONFIG.cors,
+		db: {
+			host: CONFIG.db.host,
+			port: CONFIG.db.port,
+			database: CONFIG.db.database,
+			user: CONFIG.db.user,
+			// Don't log the password
+		},
+		requestTimeout: CONFIG.requestTimeout,
+	},
+});
+
 const { db, pool } = createDb(CONFIG.db);
 
 const app = createApp({
