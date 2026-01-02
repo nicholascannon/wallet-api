@@ -6,6 +6,7 @@ import { CONFIG } from './config/env.js';
 import { loggingMiddleware } from './lib/logger.js';
 import { genericErrorHandler } from './middleware/generic-error-handler.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
+import { requestTimeoutMiddleware } from './middleware/request-timeout.js';
 import { zodErrorHandler } from './middleware/zod-error-handler.js';
 import { HealthController } from './services/health/health-controller.js';
 import type { HealthRepository } from './services/health/health-repository.js';
@@ -26,6 +27,9 @@ export function createApp({
 
 	app.use(helmet());
 	app.use(requestIdMiddleware);
+	if (CONFIG.requestTimeout > 0) {
+		app.use(requestTimeoutMiddleware(CONFIG.requestTimeout));
+	}
 	app.use(
 		cors({
 			origin: CONFIG.cors.hosts,

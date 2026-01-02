@@ -17,6 +17,7 @@ export const CONFIG = z
 			user: z.string(),
 			password: z.string(),
 		}),
+		requestTimeout: z.number().optional().transform(Number).default(30_000),
 	})
 	.parse({
 		env: process.env.NODE_ENV,
@@ -31,6 +32,7 @@ export const CONFIG = z
 			user: process.env.DB_USERNAME,
 			password: process.env.DB_PASSWORD,
 		},
+		requestTimeout: process.env.REQUEST_TIMEOUT,
 	});
 
 export type Config = typeof CONFIG;
