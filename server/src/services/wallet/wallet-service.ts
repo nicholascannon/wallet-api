@@ -46,6 +46,13 @@ export class WalletService {
 			};
 
 			await this.repo.saveTransaction(transaction);
+
+			LOGGER.info('DEBIT', {
+				walletId,
+				transactionId: transaction.transactionId,
+				amount,
+			});
+
 			return transaction;
 		});
 	}
@@ -76,7 +83,17 @@ export class WalletService {
 			await this.repo.saveTransaction(transaction);
 
 			if (created) {
-				LOGGER.info('Created new wallet', { walletId, metadata });
+				LOGGER.info('CREDIT - NEW WALLET', {
+					walletId,
+					transactionId: transaction.transactionId,
+					amount,
+				});
+			} else {
+				LOGGER.info('CREDIT', {
+					walletId,
+					transactionId: transaction.transactionId,
+					amount,
+				});
 			}
 
 			return { transaction, created };
