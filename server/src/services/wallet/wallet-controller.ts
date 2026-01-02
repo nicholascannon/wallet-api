@@ -6,6 +6,7 @@ import {
 } from 'express';
 import * as z from 'zod';
 import type { Controller } from '../../lib/controller.js';
+import { LOGGER } from '../../lib/logger.js';
 import {
 	InsufficientFundsError,
 	InvalidDebitAmountError,
@@ -92,6 +93,14 @@ export class WalletController implements Controller {
 			},
 		);
 
+		LOGGER.info('DEBIT', {
+			walletId,
+			transactionId,
+			amount,
+			requestId: req.requestId,
+			ip: req.ip,
+		});
+
 		return res.status(200).json({
 			balance: balance.toFixed(2),
 			requestId: req.requestId,
@@ -126,6 +135,24 @@ export class WalletController implements Controller {
 				...metadata,
 			},
 		);
+
+		if (created) {
+			LOGGER.info('CREDIT - NEW WALLET', {
+				walletId,
+				transactionId: transaction.transactionId,
+				amount,
+				requestId: req.requestId,
+				ip: req.ip,
+			});
+		} else {
+			LOGGER.info('CREDIT', {
+				walletId,
+				transactionId: transaction.transactionId,
+				amount,
+				requestId: req.requestId,
+				ip: req.ip,
+			});
+		}
 
 		return res.status(created ? 201 : 200).json({
 			balance: transaction.balance.toFixed(2),

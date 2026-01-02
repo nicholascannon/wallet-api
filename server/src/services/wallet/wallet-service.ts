@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { LOGGER } from '../../lib/logger.js';
 import {
 	ConcurrentModificationError,
 	InvalidDebitAmountError,
@@ -47,12 +46,6 @@ export class WalletService {
 
 			await this.repo.saveTransaction(transaction);
 
-			LOGGER.info('DEBIT', {
-				walletId,
-				transactionId: transaction.transactionId,
-				amount,
-			});
-
 			return transaction;
 		});
 	}
@@ -81,20 +74,6 @@ export class WalletService {
 			};
 
 			await this.repo.saveTransaction(transaction);
-
-			if (created) {
-				LOGGER.info('CREDIT - NEW WALLET', {
-					walletId,
-					transactionId: transaction.transactionId,
-					amount,
-				});
-			} else {
-				LOGGER.info('CREDIT', {
-					walletId,
-					transactionId: transaction.transactionId,
-					amount,
-				});
-			}
 
 			return { transaction, created };
 		});
