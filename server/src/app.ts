@@ -1,6 +1,7 @@
 import cors from 'cors';
 import type { Application } from 'express';
 import express from 'express';
+import helmet from 'helmet';
 import { CONFIG } from './config/env.js';
 import { loggingMiddleware } from './lib/logger.js';
 import { genericErrorHandler } from './middleware/generic-error-handler.js';
@@ -23,6 +24,7 @@ export function createApp({
 }): Application {
 	const app = express();
 
+	app.use(helmet());
 	app.use(requestIdMiddleware);
 	app.use(
 		cors({
