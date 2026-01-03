@@ -66,7 +66,7 @@ describe('money', () => {
 				const firstIssue = zodError.issues[0];
 				if (firstIssue) {
 					expect(firstIssue.message).toBe(
-						'Money must have exactly 2 decimal places',
+						'Only valid monetary values are allowed (e.g. "10.50", "0.01", "100.00", "50")',
 					);
 				}
 			} else {

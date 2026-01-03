@@ -8,6 +8,7 @@ import * as z from 'zod';
 export const money = z
 	.string()
 	.regex(/^\d+(\.\d{2})?$/, {
-		message: 'Money must have exactly 2 decimal places',
+		message:
+			'Only valid monetary values are allowed (e.g. "10.50", "0.01", "100.00", "50")',
 	})
 	.transform(Number);
