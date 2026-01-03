@@ -37,8 +37,8 @@ export class PgWalletRepo implements WalletRepository {
 			await this.db.insert(transactionsTable).values({
 				wallet_id: transaction.walletId,
 				transaction_id: transaction.transactionId,
-				balance: transaction.balance.toString(),
-				amount: transaction.amount.toString(),
+				balance: transaction.balance.toFixed(2),
+				amount: transaction.amount.toFixed(2),
 				version: transaction.version.toString(),
 				type: transaction.type,
 				metadata: transaction.metadata,

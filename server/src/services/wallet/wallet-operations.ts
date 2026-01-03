@@ -14,14 +14,14 @@ export function debit(wallet: Wallet, transactionAmount: number): number {
 		throw new InsufficientFundsError(balance.toNumber(), amount.toNumber());
 	}
 
-	return balance.minus(amount).toNumber();
+	return balance.minus(amount).toDecimalPlaces(2).toNumber();
 }
 
 export function credit(wallet: Wallet, transactionAmount: number): number {
 	const balance = new Decimal(wallet.balance);
 	const amount = new Decimal(transactionAmount);
 
-	return balance.plus(amount).toNumber();
+	return balance.plus(amount).toDecimalPlaces(2).toNumber();
 }
 
 export function createWallet(walletId: string): Wallet {
