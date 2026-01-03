@@ -64,7 +64,7 @@ describe('WalletController', () => {
 			// First, credit the wallet so it exists
 			await request(app)
 				.post(`/v1/wallet/${walletId}/credit`)
-				.send({ amount: 100 });
+				.send({ amount: '100.00' });
 
 			const res = await request(app).get(`/v1/wallet/${walletId}`);
 			expect(res.status).toBe(200);
@@ -89,7 +89,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/credit`)
 				.set('x-request-id', REQUEST_ID)
 				.set('x-source', SOURCE)
-				.send({ amount: 50 });
+				.send({ amount: '50.00' });
 
 			expect(saveTransactionSpy).toHaveBeenCalledWith({
 				walletId,
@@ -112,13 +112,13 @@ describe('WalletController', () => {
 		it('returns 200 and updated balance for existing wallet', async () => {
 			await request(app)
 				.post(`/v1/wallet/${walletId}/credit`)
-				.send({ amount: 10 });
+				.send({ amount: '10.00' });
 
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/credit`)
 				.set('x-request-id', REQUEST_ID)
 				.set('x-source', SOURCE)
-				.send({ amount: 5 });
+				.send({ amount: '5.00' });
 
 			expect(saveTransactionSpy).toHaveBeenCalledWith({
 				walletId,
@@ -141,7 +141,7 @@ describe('WalletController', () => {
 		it('returns 400 for invalid wallet id', async () => {
 			const res = await request(app)
 				.post('/v1/wallet/not-a-uuid/credit')
-				.send({ amount: 10 });
+				.send({ amount: '10.00' });
 
 			expect(res.status).toBe(400);
 			expect(res.body).toHaveProperty('message', 'Invalid request');
@@ -150,7 +150,16 @@ describe('WalletController', () => {
 		it('returns 400 for invalid amount', async () => {
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/credit`)
-				.send({ amount: -5 });
+				.send({ amount: '-5.00' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('returns 400 for invalid money', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.send({ amount: '1.0000000000000004' });
 
 			expect(res.status).toBe(400);
 			expect(res.body).toHaveProperty('message', 'Invalid request');
@@ -161,7 +170,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/credit`)
 				.set('x-request-id', REQUEST_ID)
 				.set('x-source', SOURCE)
-				.send({ amount: 10, metadata: { test: 'test' } });
+				.send({ amount: '10.00', metadata: { test: 'test' } });
 
 			expect(saveTransactionSpy).toHaveBeenCalledWith(
 				expect.objectContaining({
@@ -187,7 +196,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/debit`)
 				.set('x-request-id', REQUEST_ID)
 				.set('x-source', SOURCE)
-				.send({ amount: 5 });
+				.send({ amount: '5.00' });
 
 			expect(saveTransactionSpy).toHaveBeenCalledWith({
 				walletId,
@@ -223,7 +232,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/debit`)
 				.set('x-request-id', REQUEST_ID)
 				.set('x-source', SOURCE)
-				.send({ amount: 10 });
+				.send({ amount: '10.00' });
 
 			expect(res.status).toBe(400);
 			expect(res.body).toEqual({
@@ -240,7 +249,7 @@ describe('WalletController', () => {
 
 			const res = await request(app)
 				.post(`/v1/wallet/${nonExistentId}/debit`)
-				.send({ amount: 10 });
+				.send({ amount: '10.00' });
 
 			expect(res.status).toBe(404);
 			expect(res.body).toEqual({
@@ -253,7 +262,7 @@ describe('WalletController', () => {
 		it('returns 400 for invalid wallet id', async () => {
 			const res = await request(app)
 				.post('/v1/wallet/not-a-uuid/debit')
-				.send({ amount: 5 });
+				.send({ amount: '5.00' });
 
 			expect(res.status).toBe(400);
 			expect(res.body).toHaveProperty('message', 'Invalid request');
@@ -262,7 +271,16 @@ describe('WalletController', () => {
 		it('returns 400 for invalid amount', async () => {
 			const res = await request(app)
 				.post(`/v1/wallet/${walletId}/debit`)
-				.send({ amount: 0 });
+				.send({ amount: '0.00' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('returns 400 for invalid money', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.send({ amount: '1.0000000000000004' });
 
 			expect(res.status).toBe(400);
 			expect(res.body).toHaveProperty('message', 'Invalid request');
@@ -283,7 +301,7 @@ describe('WalletController', () => {
 				.post(`/v1/wallet/${walletId}/debit`)
 				.set('x-request-id', REQUEST_ID)
 				.set('x-source', SOURCE)
-				.send({ amount: 10, metadata: { test: 'test' } });
+				.send({ amount: '10.00', metadata: { test: 'test' } });
 
 			expect(saveTransactionSpy).toHaveBeenCalledWith(
 				expect.objectContaining({

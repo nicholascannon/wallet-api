@@ -7,6 +7,7 @@ import {
 import * as z from 'zod';
 import type { Controller } from '../../lib/controller.js';
 import { LOGGER } from '../../lib/logger.js';
+import { money } from '../../lib/validation.js';
 import {
 	InsufficientFundsError,
 	InvalidDebitAmountError,
@@ -67,7 +68,7 @@ export class WalletController implements Controller {
 
 	private readonly debitSchema = z.object({
 		walletId: z.uuid(),
-		amount: z.number().min(0.01),
+		amount: money.pipe(z.number().min(0.01)),
 		metadata: z
 			.record(
 				z.string(),
@@ -110,7 +111,7 @@ export class WalletController implements Controller {
 
 	private readonly creditSchema = z.object({
 		walletId: z.uuid(),
-		amount: z.number().min(0.01),
+		amount: money.pipe(z.number().min(0.01)),
 		metadata: z
 			.record(
 				z.string(),
