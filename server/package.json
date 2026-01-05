@@ -21,7 +21,6 @@
 		"@types/supertest": "^6.0.3",
 		"@vitest/coverage-v8": "^4.0.8",
 		"@vitest/ui": "^4.0.8",
-		"dotenv": "^17.2.2",
 		"drizzle-kit": "^0.31.4",
 		"supertest": "^7.1.4",
 		"tsx": "^4.20.5",
@@ -29,6 +28,7 @@
 		"vitest": "^4.0.8"
 	},
 	"dependencies": {
+		"dotenv": "^17.2.2",
 		"cors": "^2.8.5",
 		"decimal.js": "^10.6.0",
 		"drizzle-orm": "^0.44.5",
