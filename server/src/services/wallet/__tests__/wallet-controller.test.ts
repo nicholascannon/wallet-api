@@ -178,6 +178,63 @@ describe('WalletController', () => {
 				}),
 			);
 		});
+
+		it('returns 400 for amount below minimum (0.00)', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.send({ amount: '0.00' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('returns 201 for minimum valid amount (0.01)', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
+				.send({ amount: '0.01' });
+
+			expect(res.status).toBe(201);
+			expect(res.body).toEqual({
+				balance: '0.01',
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
+			});
+		});
+
+		it('returns 201 for maximum valid amount (1000000.00)', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
+				.send({ amount: '1000000.00' });
+
+			expect(res.status).toBe(201);
+			expect(res.body).toEqual({
+				balance: '1000000.00',
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
+			});
+		});
+
+		it('returns 400 for amount exceeding maximum (1000000.01)', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.send({ amount: '1000000.01' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('returns 400 for amount exceeding maximum (1000001.00)', async () => {
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/credit`)
+				.send({ amount: '1000001.00' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
 	});
 
 	describe('POST /wallet/:id/debit', () => {
@@ -308,6 +365,113 @@ describe('WalletController', () => {
 					metadata: { test: 'test', requestId: REQUEST_ID, source: SOURCE },
 				}),
 			);
+		});
+
+		it('returns 400 for amount below minimum (0.00)', async () => {
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 100,
+				amount: 100,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
+
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.send({ amount: '0.00' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('returns 200 for minimum valid amount (0.01)', async () => {
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 100,
+				amount: 100,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
+
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
+				.send({ amount: '0.01' });
+
+			expect(res.status).toBe(200);
+			expect(res.body).toEqual({
+				balance: '99.99',
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
+			});
+		});
+
+		it('returns 200 for maximum valid amount (1000000.00)', async () => {
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 2_000_000,
+				amount: 2_000_000,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
+
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.set('x-request-id', REQUEST_ID)
+				.set('x-source', SOURCE)
+				.send({ amount: '1000000.00' });
+
+			expect(res.status).toBe(200);
+			expect(res.body).toEqual({
+				balance: '1000000.00',
+				requestId: REQUEST_ID,
+				transactionId: TRANSACTION_ID,
+			});
+		});
+
+		it('returns 400 for amount exceeding maximum (1000000.01)', async () => {
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 2_000_000,
+				amount: 2_000_000,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
+
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.send({ amount: '1000000.01' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
+		});
+
+		it('returns 400 for amount exceeding maximum (1000001.00)', async () => {
+			walletRepo.saveTransaction({
+				walletId,
+				transactionId: TRANSACTION_ID,
+				balance: 2_000_000,
+				amount: 2_000_000,
+				version: 1,
+				created: NOW,
+				type: 'CREDIT',
+			});
+
+			const res = await request(app)
+				.post(`/v1/wallet/${walletId}/debit`)
+				.send({ amount: '1000001.00' });
+
+			expect(res.status).toBe(400);
+			expect(res.body).toHaveProperty('message', 'Invalid request');
 		});
 	});
 });

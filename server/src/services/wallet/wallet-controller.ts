@@ -15,6 +15,9 @@ import {
 } from './wallet-errors.js';
 import type { WalletService } from './wallet-service.js';
 
+const MAX_TRANSACTION_AMOUNT = 1_000_000; // $1M per transaction
+const MIN_TRANSACTION_AMOUNT = 0.01;
+
 export class WalletController implements Controller {
 	public readonly router: Router;
 
@@ -68,7 +71,9 @@ export class WalletController implements Controller {
 
 	private readonly debitSchema = z.object({
 		walletId: z.uuid(),
-		amount: money.pipe(z.number().min(0.01)),
+		amount: money.pipe(
+			z.number().min(MIN_TRANSACTION_AMOUNT).max(MAX_TRANSACTION_AMOUNT),
+		),
 		metadata: z
 			.record(
 				z.string(),
@@ -111,7 +116,9 @@ export class WalletController implements Controller {
 
 	private readonly creditSchema = z.object({
 		walletId: z.uuid(),
-		amount: money.pipe(z.number().min(0.01)),
+		amount: money.pipe(
+			z.number().min(MIN_TRANSACTION_AMOUNT).max(MAX_TRANSACTION_AMOUNT),
+		),
 		metadata: z
 			.record(
 				z.string(),
