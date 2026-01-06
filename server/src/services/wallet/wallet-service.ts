@@ -32,7 +32,7 @@ export class WalletService {
 				throw new WalletNotFoundError(walletId);
 			}
 
-			const newBalance = debit(wallet, amount);
+			const newBalance = debit(wallet.balance, amount);
 			const transaction: Transaction = {
 				walletId,
 				transactionId: randomUUID(),
@@ -61,7 +61,7 @@ export class WalletService {
 
 			const wallet = fetchedWallet ?? createWallet(walletId);
 
-			const newBalance = credit(wallet, amount);
+			const newBalance = credit(wallet.balance, amount);
 			const transaction: Transaction = {
 				walletId,
 				transactionId: randomUUID(),

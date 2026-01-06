@@ -4,11 +4,11 @@ import {
 } from './wallet-errors.js';
 import type { Wallet } from './wallet-types.js';
 
-export function debit(wallet: Wallet, transactionAmount: number): number {
-	const balanceCents = Math.round(wallet.balance * 100);
-	const amountCents = Math.round(transactionAmount * 100);
+export function debit(balance: number, amount: number): number {
+	const balanceCents = Math.round(balance * 100);
+	const amountCents = Math.round(amount * 100);
 
-	if (amountCents < 0) throw new InvalidDebitAmountError(transactionAmount);
+	if (amountCents < 0) throw new InvalidDebitAmountError(amount);
 	if (amountCents > balanceCents) {
 		throw new InsufficientFundsError(balanceCents / 100, amountCents / 100);
 	}
@@ -16,9 +16,9 @@ export function debit(wallet: Wallet, transactionAmount: number): number {
 	return (balanceCents - amountCents) / 100;
 }
 
-export function credit(wallet: Wallet, transactionAmount: number): number {
-	const balanceCents = Math.round(wallet.balance * 100);
-	const amountCents = Math.round(transactionAmount * 100);
+export function credit(balance: number, amount: number): number {
+	const balanceCents = Math.round(balance * 100);
+	const amountCents = Math.round(amount * 100);
 
 	return (balanceCents + amountCents) / 100;
 }
