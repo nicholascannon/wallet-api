@@ -1,5 +1,6 @@
 import {
 	InsufficientFundsError,
+	InvalidCreditAmountError,
 	InvalidDebitAmountError,
 } from './wallet-errors.js';
 import type { Wallet } from './wallet-types.js';
@@ -19,6 +20,8 @@ export function debit(balance: number, amount: number): number {
 export function credit(balance: number, amount: number): number {
 	const balanceCents = Math.round(balance * 100);
 	const amountCents = Math.round(amount * 100);
+
+	if (amountCents < 0) throw new InvalidCreditAmountError(amount);
 
 	return (balanceCents + amountCents) / 100;
 }

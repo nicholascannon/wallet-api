@@ -24,6 +24,13 @@ export class InvalidDebitAmountError extends Error {
 	}
 }
 
+export class InvalidCreditAmountError extends Error {
+	constructor(public readonly amount: number) {
+		super(`Credit amount cannot be less than 0: ${amount}`);
+		this.name = 'InvalidCreditAmountError';
+	}
+}
+
 export class ConcurrentModificationError extends Error {
 	constructor(public readonly walletId: string) {
 		super(

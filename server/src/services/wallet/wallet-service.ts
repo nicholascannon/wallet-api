@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 import {
 	ConcurrentModificationError,
+	InvalidCreditAmountError,
 	InvalidDebitAmountError,
 	WalletNotFoundError,
 } from './wallet-errors.js';
@@ -55,6 +56,10 @@ export class WalletService {
 		amount: number,
 		metadata?: Transaction['metadata'],
 	): Promise<{ created: boolean; transaction: Transaction }> {
+		if (amount < 0) {
+			throw new InvalidCreditAmountError(amount);
+		}
+
 		return this.withRetry(async () => {
 			const fetchedWallet = await this.repo.getWallet(walletId);
 			const created = !fetchedWallet;

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
 	InsufficientFundsError,
+	InvalidCreditAmountError,
 	InvalidDebitAmountError,
 } from '../wallet-errors.js';
 import { createWallet, credit, debit } from '../wallet-operations.js';
@@ -17,9 +18,8 @@ describe('Wallet operations', () => {
 			expect(newBalance).toBe(50);
 		});
 
-		it('should handle negative amount (should subtract)', () => {
-			const newBalance = credit(100, -20);
-			expect(newBalance).toBe(80);
+		it('should throw if amount is negative', () => {
+			expect(() => credit(100, -20)).toThrow(InvalidCreditAmountError);
 		});
 
 		it('should handle floating point precision', () => {

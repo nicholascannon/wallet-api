@@ -10,6 +10,7 @@ import { LOGGER } from '../../lib/logger.js';
 import { money } from '../../lib/validation.js';
 import {
 	InsufficientFundsError,
+	InvalidCreditAmountError,
 	InvalidDebitAmountError,
 	WalletNotFoundError,
 } from './wallet-errors.js';
@@ -42,6 +43,13 @@ export class WalletController implements Controller {
 			return res.status(400).json({
 				message: error.message,
 				error: 'INVALID_DEBIT_AMOUNT',
+				amount: error.amount.toFixed(2),
+			});
+		}
+		if (error instanceof InvalidCreditAmountError) {
+			return res.status(400).json({
+				message: error.message,
+				error: 'INVALID_CREDIT_AMOUNT',
 				amount: error.amount.toFixed(2),
 			});
 		}
