@@ -1,4 +1,3 @@
-import { Decimal } from 'decimal.js';
 import {
 	InsufficientFundsError,
 	InvalidDebitAmountError,
@@ -6,22 +5,22 @@ import {
 import type { Wallet } from './wallet-types.js';
 
 export function debit(wallet: Wallet, transactionAmount: number): number {
-	const balance = new Decimal(wallet.balance);
-	const amount = new Decimal(transactionAmount);
+	const balanceCents = Math.round(wallet.balance * 100);
+	const amountCents = Math.round(transactionAmount * 100);
 
-	if (amount.lessThan(0)) throw new InvalidDebitAmountError(amount.toNumber());
-	if (amount.greaterThan(balance)) {
-		throw new InsufficientFundsError(balance.toNumber(), amount.toNumber());
+	if (amountCents < 0) throw new InvalidDebitAmountError(transactionAmount);
+	if (amountCents > balanceCents) {
+		throw new InsufficientFundsError(balanceCents / 100, amountCents / 100);
 	}
 
-	return balance.minus(amount).toDecimalPlaces(2).toNumber();
+	return (balanceCents - amountCents) / 100;
 }
 
 export function credit(wallet: Wallet, transactionAmount: number): number {
-	const balance = new Decimal(wallet.balance);
-	const amount = new Decimal(transactionAmount);
+	const balanceCents = Math.round(wallet.balance * 100);
+	const amountCents = Math.round(transactionAmount * 100);
 
-	return balance.plus(amount).toDecimalPlaces(2).toNumber();
+	return (balanceCents + amountCents) / 100;
 }
 
 export function createWallet(walletId: string): Wallet {
