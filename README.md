@@ -2,131 +2,175 @@
 
 A minimal wallet service with a Node.js HTTP API and AWS CDK infrastructure, designed as a wallet for casino use cases. The API exposes basic wallet operations (create-on-first-credit, debit, credit, balance read).
 
-## Project structure
+## Structure
 
-- `server/` – TypeScript/Node.js HTTP API (Express 5, Drizzle ORM, Vitest, Biome)
-  - `src/` – application code (config, data access, middleware, services, controllers)
-  - `drizzle.config.ts` – database and migration config
-- `infra/` – AWS CDK stack for deploying the API to ECS Fargate with RDS Postgres and an ALB
-- `docker-compose.yml` – local DB, migrations, and API services
-- `run.sh` / `stop.sh` / `db.sh` – convenience scripts for running via Docker
+```
+wallet-api/
+├── server/          # Express API server
+│   ├── src/         # Application code
+│   ├── Dockerfile
+│   └── drizzle.config.ts
+├── infra/           # AWS CDK infrastructure
+├── bruno/           # API collection for testing
+├── docker-compose.yml
+├── run.sh           # Docker startup script
+├── stop.sh          # Docker shutdown script
+└── db.sh            # Database-only startup script
+```
 
 ## Prerequisites
 
 - Node.js v22.13.0 (see `.nvmrc`)
-- Docker + Docker Compose
 - npm (bundled with Node)
+- Docker & Docker Compose (for containerized deployment)
 
 For infrastructure work (`infra`):
 
 - AWS account and credentials configured via the AWS CLI
 - AWS CDK CLI (`npm install -g aws-cdk`)
 
-## API overview
+## Development
+
+Install dependencies:
+
+```bash
+cd server
+npm ci
+```
+
+Run the API in development mode with hot reload:
+
+```bash
+# Start database and run migrations
+../db.sh
+
+# Copy environment file
+cp .env.example .env
+
+# Run migrations
+npm run db:migrate
+
+# Start the API
+npm run start
+```
+
+The API will listen on the port defined in `.env` (default: `8000`).
+
+### Other Commands
+
+All commands below are run from `server/`:
+
+```bash
+# Build
+npm run build
+
+# Testing
+npm test
+npm run test:ui
+npm run coverage
+npm run coverage:ui
+
+# Linting
+npm run lint
+npm run lint:fix
+
+# Database
+npm run db:migrate
+npm run db:generate
+```
+
+## Docker
+
+Build and run with Docker Compose:
+
+```bash
+./run.sh
+# or
+docker compose --profile api up --build
+```
+
+Stop containers:
+
+```bash
+./stop.sh
+# or
+docker compose down
+```
+
+The Docker setup:
+
+1. Starts a Postgres 13 container (`db` service)
+2. Runs database migrations (`migrations` service)
+3. Builds and runs the API container (`wallet-api` service) on port `8000`
+
+Environment details:
+
+- DB: `postgres://postgres:postgres@localhost:5432/casino`
+- API: `http://localhost:8000`
+
+To start only the database and migrations (no API):
+
+```bash
+./db.sh
+```
+
+## Server Configuration
+
+The API can be configured via environment variables (see `.env.example` and `server/src/config/env.ts`):
+
+```bash
+# Environment (development | production | test)
+NODE_ENV=development
+
+# Server port (default: 8000)
+PORT=8000
+
+# CORS allowed hosts (comma-separated)
+CORS_HOSTS=http://localhost:5173,http://localhost:3000
+
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=casino
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+
+# Request timeout in ms (default: 30000)
+REQUEST_TIMEOUT=30000
+```
+
+Create a `.env` file in the `server/` directory or set these variables in your environment.
+
+## API Overview
 
 - Base URL: `http://localhost:8000`
 - Endpoints:
-  - `GET /v1/health`
-  - `GET /v1/wallet/:id`
-  - `POST /v1/wallet/:id/credit`
-  - `POST /v1/wallet/:id/debit`
+  - `GET /v1/health` - Health check
+  - `GET /v1/wallet/:id` - Get wallet balance
+  - `POST /v1/wallet/:id/credit` - Credit funds to wallet
+  - `POST /v1/wallet/:id/debit` - Debit funds from wallet
 
 Example:
 
 ```bash
 curl -X POST \
-  http://localhost:8000/v1/wallet/00000000-0000-0000-0000-000000000001/credit \
+  http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9/credit \
   -H 'Content-Type: application/json' \
-  -d '{"amount": 10.0}'
+  -d '{"amount": "10.00"}' \
 ```
-
-## Configuration
-
-The API reads configuration from environment variables (see `.env.example` and `server/src/config/env.ts`):
-
-- `NODE_ENV`
-- `PORT`
-- `CORS_HOSTS`
-- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD`
-- `REQUEST_TIMEOUT` (optional, in milliseconds)
-
-## Running the application with Docker (recommended)
-
-From the repo root:
 
 ```bash
-./run.sh
+curl http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
 ```
 
-This will:
+## Tech Stack
 
-- Start a Postgres 13 container (`db` service)
-- Run database migrations (`migrations` service)
-- Build and run the API container (`wallet-api` service) on port `8000`
+- **Backend**: Express 5, TypeScript, Drizzle ORM, PostgreSQL
+- **Testing**: Vitest, Supertest
+- **Tooling**: Biome (linting/formatting), Winston (logging), Helmet, CORS
+- **Infrastructure**: AWS CDK, ECS Fargate, RDS PostgreSQL, Application Load Balancer
 
-Environment details (see `docker-compose.yml`):
-
-- DB: `postgres://postgres:postgres@localhost:5432/casino`
-- API: `http://localhost:8000`
-
-To stop the API and its containers:
-
-```bash
-./stop.sh
-```
-
-To start only the database and migrations (no API profile):
-
-```bash
-./db.sh
-```
-
-## Local development with hot reload (server only)
-
-For a faster dev loop (TypeScript + hot reload) you can run the API directly on your machine and use Docker only for Postgres.
-
-From the repo root, then `server/`:
-
-```bash
-./db.sh
-cd server
-npm ci
-cp .env.example .env
-npm run db:migrate
-npm run start
-```
-
-The API will listen on the port defined in `.env` (commonly `8000`).
-
-### Useful npm scripts (server)
-
-All commands below are run from `server/`:
-
-```bash
-npm run build
-npm run lint
-npm run lint:fix
-npm run db:migrate
-npm run db:generate
-```
-
-## Testing
-
-### API tests (Vitest)
-
-From `server/`:
-
-```bash
-npm test
-npm run test:ui
-npm run coverage
-npm run coverage:ui
-npx vitest src/services/wallet/__tests__/wallet-service.test.ts
-```
-
-Tests primarily live under `src/**/__tests__/`.
-
-## Deploying infrastructure (CDK)
+## Infrastructure Deployment (CDK)
 
 ### Setup
 
@@ -135,13 +179,18 @@ cd infra
 npm ci
 ```
 
-### Useful commands
+### Useful Commands
 
 From `infra/`:
 
 ```bash
+# Synthesize CloudFormation template
 npx cdk synth
+
+# Compare deployed stack with current state
 npx cdk diff
+
+# Deploy stack
 npx cdk deploy --context environment=dev --context imageTag=latest
 ```
 
