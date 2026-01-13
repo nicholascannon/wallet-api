@@ -1,3 +1,8 @@
+/**
+ * This file contains the business logic for the wallet operations.
+ * Handles floating point precision issues by converting to cents and back.
+ * This is a workaround to avoid the issues with floating point precision in JavaScript.
+ */
 import {
 	InsufficientFundsError,
 	InvalidCreditAmountError,
