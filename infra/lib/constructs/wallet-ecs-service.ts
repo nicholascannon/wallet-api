@@ -63,6 +63,9 @@ export class WalletEcsService extends Construct {
 				PORT: port.toString(),
 				DB_HOST: database.instanceEndpoint.hostname,
 				DB_PORT: database.instanceEndpoint.port.toString(),
+				ENABLE_OPENAPI_DOCS: props.envConfig.enableOpenApiDocs
+					? 'true'
+					: 'false',
 			},
 			secrets: {
 				DB_NAME: ecs.Secret.fromSecretsManager(dbSecret, 'dbname'),

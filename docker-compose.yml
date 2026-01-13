@@ -38,6 +38,7 @@ services:
       DB_PORT: 5432
       DB_NAME: casino
       CORS_HOSTS: http://localhost:5173
+      ENABLE_OPENAPI_DOCS: true
     ports:
       - 8000:8000
     depends_on:

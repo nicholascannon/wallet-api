@@ -1,0 +1,442 @@
+openapi: 3.0.3
+
+info:
+  title: Wallet API
+  description: API for managing wallet balances and transactions
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Wallet
+    description: Wallet management and transactions
+
+paths:
+  /v1/health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service and database
+      operationId: getHealth
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /v1/wallet/{id}:
+    get:
+      summary: Get wallet balance
+      description: |
+        Retrieves a wallet by ID. Always returns a wallet object, even if the wallet 
+        doesn't exist (returns zero balance) to avoid leaking information about wallet existence.
+      operationId: getWallet
+      tags:
+        - Wallet
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      responses:
+        '200':
+          description: Wallet retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletResponse'
+        '400':
+          description: Invalid request (invalid UUID format)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/wallet/{id}/debit:
+    post:
+      summary: Debit from wallet
+      description: Deducts an amount from a wallet balance. Wallet must exist.
+      operationId: debitWallet
+      tags:
+        - Wallet
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitRequest'
+      responses:
+        '200':
+          description: Debit successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Invalid request, insufficient funds, or invalid amount
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationError'
+                  - $ref: '#/components/schemas/InsufficientFundsError'
+                  - $ref: '#/components/schemas/InvalidDebitAmountError'
+        '404':
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletNotFoundError'
+        '413':
+          $ref: '#/components/responses/RequestTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/wallet/{id}/credit:
+    post:
+      summary: Credit to wallet
+      description: Adds an amount to a wallet balance. Creates the wallet if it doesn't exist.
+      operationId: creditWallet
+      tags:
+        - Wallet
+      parameters:
+        - $ref: '#/components/parameters/WalletId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+      responses:
+        '200':
+          description: Credit successful (wallet existed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '201':
+          description: Credit successful (wallet created)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Invalid request or invalid amount
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ValidationError'
+                  - $ref: '#/components/schemas/InvalidCreditAmountError'
+        '413':
+          $ref: '#/components/responses/RequestTooLarge'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  parameters:
+    WalletId:
+      name: id
+      in: path
+      required: true
+      description: Unique wallet identifier (UUID v4)
+      schema:
+        type: string
+        format: uuid
+        example: 4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+
+  responses:
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InternalError'
+
+    RequestTooLarge:
+      description: Request body too large (max 100kb)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: Request body too large
+              requestId:
+                type: string
+                example: req-4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+            required:
+              - message
+              - requestId
+
+  schemas:
+    HealthResponse:
+      type: object
+      description: Service health status
+      properties:
+        service:
+          type: string
+          description: Service status
+          enum: [up]
+          example: up
+        db:
+          type: string
+          description: Database connection status
+          enum: [ok, error]
+          example: ok
+      required:
+        - service
+        - db
+
+    WalletResponse:
+      type: object
+      description: Wallet information
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Wallet unique identifier
+          example: 4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+        balance:
+          type: string
+          description: Current balance as a fixed-point decimal string with 2 decimal places
+          pattern: ^\d+\.\d{2}$
+          example: "100.50"
+        updated:
+          type: string
+          format: date-time
+          description: Timestamp of last wallet update
+          example: "2024-01-15T10:30:00.000Z"
+      required:
+        - id
+        - balance
+        - updated
+
+    TransactionMetadata:
+      type: object
+      description: Optional key-value metadata for the transaction
+      additionalProperties:
+        oneOf:
+          - type: string
+          - type: number
+          - type: boolean
+        nullable: true
+      example:
+        source: payment
+        orderId: order-123
+
+    DebitRequest:
+      type: object
+      description: Request to debit funds from a wallet
+      properties:
+        amount:
+          type: string
+          description: |
+            Amount to debit as a monetary string. Accepts whole numbers (e.g., "50") 
+            or values with exactly two decimal places (e.g., "50.25").
+            Must be between 0.01 and 1,000,000.
+          pattern: ^\d+(\.\d{2})?$
+          example: "50.25"
+        metadata:
+          $ref: '#/components/schemas/TransactionMetadata'
+      required:
+        - amount
+
+    CreditRequest:
+      type: object
+      description: Request to credit funds to a wallet
+      properties:
+        amount:
+          type: string
+          description: |
+            Amount to credit as a monetary string. Accepts whole numbers (e.g., "50") 
+            or values with exactly two decimal places (e.g., "1000.50").
+            Must be between 0.01 and 1,000,000.
+          pattern: ^\d+(\.\d{2})?$
+          example: "1000.50"
+        metadata:
+          $ref: '#/components/schemas/TransactionMetadata'
+      required:
+        - amount
+
+    TransactionResponse:
+      type: object
+      description: Response after a successful transaction
+      properties:
+        balance:
+          type: string
+          description: New balance after transaction with 2 decimal places
+          pattern: ^\d+\.\d{2}$
+          example: "150.75"
+        requestId:
+          type: string
+          description: Request ID for tracing and debugging
+          example: req-4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+        transactionId:
+          type: string
+          format: uuid
+          description: Unique transaction identifier
+          example: 4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+      required:
+        - balance
+        - requestId
+        - transactionId
+
+    ValidationError:
+      type: object
+      description: Request validation failed
+      properties:
+        message:
+          type: string
+          example: Invalid request
+        issues:
+          type: array
+          description: Array of Zod validation error details
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+                description: Zod error code
+                example: invalid_type
+              path:
+                type: array
+                description: Path to the invalid field (strings for object keys, numbers for array indices)
+                items:
+                  oneOf:
+                    - type: string
+                    - type: integer
+                example: ["amount"]
+              message:
+                type: string
+                description: Human-readable error message
+                example: Expected string, received number
+              expected:
+                type: string
+                description: Expected type (present for type errors)
+                example: string
+              received:
+                type: string
+                description: Received type (present for type errors)
+                example: number
+            required:
+              - code
+              - path
+              - message
+      required:
+        - message
+        - issues
+
+    InsufficientFundsError:
+      type: object
+      description: Wallet has insufficient funds for the requested debit
+      properties:
+        message:
+          type: string
+          example: "Insufficient funds. Available: 50, Requested: 100"
+        error:
+          type: string
+          enum: [INSUFFICIENT_FUNDS]
+          example: INSUFFICIENT_FUNDS
+        availableBalance:
+          type: string
+          description: Current wallet balance with 2 decimal places
+          pattern: ^\d+\.\d{2}$
+          example: "50.00"
+        requestedAmount:
+          type: string
+          description: Requested debit amount with 2 decimal places
+          pattern: ^\d+\.\d{2}$
+          example: "100.00"
+      required:
+        - message
+        - error
+        - availableBalance
+        - requestedAmount
+
+    InvalidDebitAmountError:
+      type: object
+      description: Debit amount is invalid (negative or out of range)
+      properties:
+        message:
+          type: string
+          example: "Debit amount cannot be less than 0: -10"
+        error:
+          type: string
+          enum: [INVALID_DEBIT_AMOUNT]
+          example: INVALID_DEBIT_AMOUNT
+        amount:
+          type: string
+          description: The invalid amount with 2 decimal places
+          pattern: ^-?\d+\.\d{2}$
+          example: "-10.00"
+      required:
+        - message
+        - error
+        - amount
+
+    InvalidCreditAmountError:
+      type: object
+      description: Credit amount is invalid (negative or out of range)
+      properties:
+        message:
+          type: string
+          example: "Credit amount cannot be less than 0: -10"
+        error:
+          type: string
+          enum: [INVALID_CREDIT_AMOUNT]
+          example: INVALID_CREDIT_AMOUNT
+        amount:
+          type: string
+          description: The invalid amount with 2 decimal places
+          pattern: ^-?\d+\.\d{2}$
+          example: "-10.00"
+      required:
+        - message
+        - error
+        - amount
+
+    WalletNotFoundError:
+      type: object
+      description: Wallet does not exist (only returned for debit operations)
+      properties:
+        message:
+          type: string
+          example: "Wallet not found: 4bcaf50f-7c95-4f97-9a08-fbaddf966cb9"
+        error:
+          type: string
+          enum: [WALLET_NOT_FOUND]
+          example: WALLET_NOT_FOUND
+        walletId:
+          type: string
+          format: uuid
+          description: The wallet ID that was not found
+          example: 4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+      required:
+        - message
+        - error
+        - walletId
+
+    InternalError:
+      type: object
+      description: Unexpected server error
+      properties:
+        message:
+          type: string
+          example: Internal server error
+        requestId:
+          type: string
+          description: Request ID for support/debugging
+          example: req-4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
+      required:
+        - message
+        - requestId

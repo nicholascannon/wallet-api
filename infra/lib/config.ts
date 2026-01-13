@@ -14,6 +14,7 @@ export interface EnvironmentConfig {
 	};
 	readonly rdsAllocatedStorage: number;
 	readonly rdsMaxAllocatedStorage: number;
+	readonly enableOpenApiDocs: boolean;
 }
 
 export const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
@@ -31,6 +32,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
 		},
 		rdsAllocatedStorage: 20,
 		rdsMaxAllocatedStorage: 20,
+		enableOpenApiDocs: true,
 	},
 	staging: {
 		environment: 'staging',
@@ -46,6 +48,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
 		},
 		rdsAllocatedStorage: 50,
 		rdsMaxAllocatedStorage: 100,
+		enableOpenApiDocs: true,
 	},
 	prod: {
 		environment: 'prod',
@@ -61,6 +64,7 @@ export const ENVIRONMENTS: Record<string, EnvironmentConfig> = {
 		},
 		rdsAllocatedStorage: 100,
 		rdsMaxAllocatedStorage: 500,
+		enableOpenApiDocs: false,
 	},
 };
 

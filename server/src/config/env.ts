@@ -18,6 +18,11 @@ export const CONFIG = z
 			password: z.string(),
 		}),
 		requestTimeout: z.number().optional().transform(Number).default(30_000),
+		enableOpenApiDocs: z
+			.string()
+			.optional()
+			.transform((val) => val === 'true')
+			.default(false),
 	})
 	.parse({
 		env: process.env.NODE_ENV,
@@ -33,6 +38,7 @@ export const CONFIG = z
 			password: process.env.DB_PASSWORD,
 		},
 		requestTimeout: process.env.REQUEST_TIMEOUT,
+		enableOpenApiDocs: process.env.ENABLE_OPENAPI_DOCS,
 	});
 
 export type Config = typeof CONFIG;

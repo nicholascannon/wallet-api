@@ -8,6 +8,7 @@ import { genericErrorHandler } from './middleware/generic-error-handler.js';
 import { requestIdMiddleware } from './middleware/request-id.js';
 import { requestTimeoutMiddleware } from './middleware/request-timeout.js';
 import { zodErrorHandler } from './middleware/zod-error-handler.js';
+import { DocsController } from './services/docs/docs-controller.js';
 import { HealthController } from './services/health/health-controller.js';
 import type { HealthRepository } from './services/health/health-repository.js';
 import { WalletController } from './services/wallet/wallet-controller.js';
@@ -42,6 +43,11 @@ export function createApp({
 
 	app.use('/v1/wallet', walletController.router);
 	app.use('/v1/health', healthController.router);
+
+	if (CONFIG.enableOpenApiDocs) {
+		const docsController = new DocsController();
+		app.use('/api-docs', docsController.router);
+	}
 
 	app.use((req, res) => {
 		return res.status(404).json({

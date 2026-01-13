@@ -13,6 +13,7 @@ COPY drizzle.config.ts .
 COPY vitest.config.ts .
 COPY ./drizzle ./drizzle
 COPY ./src ./src
+COPY openapi.yaml ./openapi.yaml
 
 RUN npm run build
 RUN npm run lint
@@ -26,6 +27,7 @@ COPY --from=build /usr/src/app/drizzle ./drizzle
 COPY --from=build /usr/src/app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/package.json ./
+COPY --from=build /usr/src/app/openapi.yaml ./openapi.yaml
 
 USER node
 ENV NODE_ENV=production
