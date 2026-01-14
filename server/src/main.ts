@@ -22,6 +22,7 @@ LOGGER.info('CONFIG', {
 			// Don't log the password
 		},
 		requestTimeout: CONFIG.requestTimeout,
+		enableOpenApiDocs: CONFIG.enableOpenApiDocs,
 	},
 });
 
