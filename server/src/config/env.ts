@@ -7,7 +7,8 @@ export const CONFIG = z
 		cors: z.object({
 			hosts: z
 				.string()
-				.transform((val) => val.split(',').map((s) => s.trim()))
+				.optional()
+				.transform((val) => val?.split(',').map((s) => s.trim()) ?? [])
 				.pipe(z.array(z.string())),
 		}),
 		db: z.object({

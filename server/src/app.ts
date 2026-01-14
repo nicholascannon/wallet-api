@@ -31,7 +31,9 @@ export function createApp({
 	if (CONFIG.requestTimeout > 0) {
 		app.use(requestTimeoutMiddleware(CONFIG.requestTimeout));
 	}
-	app.use(cors({ origin: CONFIG.cors.hosts }));
+	if (CONFIG.cors.hosts.length > 0) {
+		app.use(cors({ origin: CONFIG.cors.hosts }));
+	}
 	if (enableLogging) app.use(loggingMiddleware);
 	app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 	app.use(express.json({ limit: '100kb', strict: true }));
