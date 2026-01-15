@@ -6,16 +6,17 @@ A minimal wallet service with a Node.js HTTP API and AWS CDK infrastructure, des
 
 ```
 wallet-api/
-├── server/          # Express API server
-│   ├── src/         # Application code
+├── .github/workflows/  # CI/CD pipelines
+├── server/             # Express API server
+│   ├── src/            # Application code
 │   ├── Dockerfile
 │   └── drizzle.config.ts
-├── infra/           # AWS CDK infrastructure
-├── bruno/           # API collection for testing
+├── infra/              # AWS CDK infrastructure
+├── bruno/              # API collection for testing
 ├── docker-compose.yml
-├── run.sh           # Docker startup script
-├── stop.sh          # Docker shutdown script
-└── db.sh            # Database-only startup script
+├── run.sh              # Docker startup script
+├── stop.sh             # Docker shutdown script
+└── db.sh               # Database-only startup script
 ```
 
 ## Prerequisites
@@ -169,6 +170,33 @@ curl http://localhost:8000/v1/wallet/4bcaf50f-7c95-4f97-9a08-fbaddf966cb9
 - **Testing**: Vitest, Supertest
 - **Tooling**: Biome (linting/formatting), Winston (logging), Helmet, CORS
 - **Infrastructure**: AWS CDK, ECS Fargate, RDS PostgreSQL, Application Load Balancer
+
+## CI/CD
+
+The project uses GitHub Actions to build and publish Docker images to ECR Public.
+
+### Pipeline Triggers
+
+The pipeline runs on:
+- Pushes to `main` that modify server code, dependencies, or the workflow itself
+- Manual trigger via `workflow_dispatch`
+
+### What It Does
+
+1. Builds the Docker image from `server/Dockerfile`
+2. Pushes to `public.ecr.aws/h8w8n0h7/wallet-api` with tags:
+   - `latest`
+   - Short git SHA (e.g., `a1b2c3d`)
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `AWS_ROLE_ARN` | ARN of the IAM role for OIDC authentication (e.g., `arn:aws:iam::123456789012:role/GitHubActionsECRPush`) |
+
+### AWS Setup
+
+The pipeline uses OIDC federation for authentication (no long-lived credentials). See the [GitHub Actions OIDC docs](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services) for setup instructions.
 
 ## Infrastructure Deployment (CDK)
 
