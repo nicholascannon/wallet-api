@@ -15,7 +15,7 @@ var DB *gorm.DB
 
 // Connect initializes the database connection with configuration
 func Connect(cfg *config.DatabaseConfig) error {
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+	connectionString := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name, cfg.SSLMode)
 
 	log.Info().
@@ -27,7 +27,7 @@ func Connect(cfg *config.DatabaseConfig) error {
 	gormLogger := NewDbLogger(200 * time.Millisecond) // Log queries slower than 200ms
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+	DB, err = gorm.Open(postgres.Open(connectionString), &gorm.Config{
 		Logger: gormLogger,
 	})
 	if err != nil {
