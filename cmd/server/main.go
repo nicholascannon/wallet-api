@@ -16,15 +16,15 @@ func main() {
 	cfg := config.Load()
 	log.Logger = logger.New(&cfg.Logging)
 
-	if err := database.Connect(&cfg.Database, log.Logger); err != nil {
+	if err := database.Connect(&cfg.Database); err != nil {
 		log.Fatal().Err(err).Msg("Failed to connect to database")
 	}
 
 	router := gin.New()
 	router.Use(
 		middleware.RequestID(),
-		middleware.Logger(log.Logger),
-		middleware.Recovery(log.Logger),
+		middleware.Logger(),
+		middleware.Recovery(),
 		middleware.Timeout(cfg.Server.RequestTimeout),
 	)
 
@@ -32,7 +32,7 @@ func main() {
 	wallet.RegisterRoutes(v1)
 	health.RegisterRoutes(v1)
 
-	srv := server.New(":"+cfg.Server.Port, router, log.Logger)
+	srv := server.New(":"+cfg.Server.Port, router)
 	if err := srv.Run(cfg.Server.ShutdownTimeout); err != nil {
 		log.Fatal().Err(err).Msg("Server failed")
 	}

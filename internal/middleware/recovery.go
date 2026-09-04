@@ -5,11 +5,11 @@ import (
 	"runtime"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // Recovery creates a panic recovery middleware with structured logging
-func Recovery(logger zerolog.Logger) gin.HandlerFunc {
+func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -18,7 +18,7 @@ func Recovery(logger zerolog.Logger) gin.HandlerFunc {
 				stack := make([]byte, 4096)
 				length := runtime.Stack(stack, false)
 
-				logger.Error().
+				log.Error().
 					Str("request_id", requestID.(string)).
 					Str("method", c.Request.Method).
 					Str("path", c.Request.URL.Path).

@@ -4,11 +4,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // Logger creates a structured logging middleware
-func Logger(logger zerolog.Logger) gin.HandlerFunc {
+func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
@@ -20,7 +20,7 @@ func Logger(logger zerolog.Logger) gin.HandlerFunc {
 
 		requestID, _ := c.Get(RequestIDKey)
 
-		event := logger.Info().
+		event := log.Info().
 			Str("request_id", requestID.(string)).
 			Str("method", c.Request.Method).
 			Str("path", path).

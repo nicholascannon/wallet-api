@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm/logger"
 )
 
@@ -16,9 +17,9 @@ type GormLogger struct {
 }
 
 // NewGormLogger creates a new GORM logger using zerolog
-func NewGormLogger(log zerolog.Logger, slowThreshold time.Duration) logger.Interface {
+func NewGormLogger(slowThreshold time.Duration) logger.Interface {
 	return &GormLogger{
-		Logger:        log,
+		Logger:        log.Logger,
 		SlowThreshold: slowThreshold,
 	}
 }

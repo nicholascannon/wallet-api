@@ -9,24 +9,22 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 // Server wraps http.Server with lifecycle management
 type Server struct {
 	httpServer *http.Server
-	logger     zerolog.Logger
 	shutdown   chan struct{}
 }
 
 // New creates a new server instance
-func New(addr string, handler http.Handler, logger zerolog.Logger) *Server {
+func New(addr string, handler http.Handler) *Server {
 	return &Server{
 		httpServer: &http.Server{
 			Addr:    addr,
 			Handler: handler,
 		},
-		logger:   logger,
 		shutdown: make(chan struct{}),
 	}
 }
@@ -34,9 +32,9 @@ func New(addr string, handler http.Handler, logger zerolog.Logger) *Server {
 // Run starts the server and blocks until shutdown signal
 func (s *Server) Run(shutdownTimeout time.Duration) error {
 	go func() {
-		s.logger.Info().Str("addr", s.httpServer.Addr).Msg("Starting server")
+		log.Info().Str("addr", s.httpServer.Addr).Msg("Starting server")
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			s.logger.Fatal().Err(err).Msg("Server failed to start")
+			log.Fatal().Err(err).Msg("Server failed to start")
 		}
 	}()
 
@@ -45,21 +43,21 @@ func (s *Server) Run(shutdownTimeout time.Duration) error {
 
 	select {
 	case <-quit:
-		s.logger.Info().Msg("Shutdown signal received")
+		log.Info().Msg("Shutdown signal received")
 	case <-s.shutdown:
-		s.logger.Info().Msg("Shutdown requested")
+		log.Info().Msg("Shutdown requested")
 	}
 
 	// Start graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 
-	s.logger.Info().Msg("Shutting down server...")
+	log.Info().Msg("Shutting down server...")
 	if err := s.httpServer.Shutdown(ctx); err != nil {
 		return fmt.Errorf("server shutdown failed: %w", err)
 	}
 
-	s.logger.Info().Msg("Server stopped")
+	log.Info().Msg("Server stopped")
 	return nil
 }
 

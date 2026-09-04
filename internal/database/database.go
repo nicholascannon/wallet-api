@@ -6,7 +6,7 @@ import (
 
 	"github.com/nicholascannon/wallet-api/internal/config"
 	"github.com/nicholascannon/wallet-api/internal/models"
-	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -14,7 +14,7 @@ import (
 var DB *gorm.DB
 
 // Connect initializes the database connection with configuration
-func Connect(cfg *config.DatabaseConfig, log zerolog.Logger) error {
+func Connect(cfg *config.DatabaseConfig) error {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name, cfg.SSLMode)
 
@@ -24,7 +24,7 @@ func Connect(cfg *config.DatabaseConfig, log zerolog.Logger) error {
 		Str("database", cfg.Name).
 		Msg("Connecting to database")
 
-	gormLogger := NewGormLogger(log, 200*time.Millisecond) // Log queries slower than 200ms
+	gormLogger := NewGormLogger(200 * time.Millisecond) // Log queries slower than 200ms
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
