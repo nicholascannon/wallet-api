@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/nicholascannon/wallet-api/internal/config"
@@ -17,22 +18,7 @@ func New(cfg *config.LoggingConfig) zerolog.Logger {
 
 	level, err := zerolog.ParseLevel(cfg.Level)
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Invalid log level")
-	}
-	zerolog.SetGlobalLevel(level)
-
-	return logger
-}
-
-// NewJSON creates a new logger that outputs JSON (for production)
-func NewJSON(cfg *config.LoggingConfig) zerolog.Logger {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-
-	logger := log.Output(os.Stderr)
-
-	level, err := zerolog.ParseLevel(cfg.Level)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("Invalid log level")
+		panic(fmt.Errorf("invalid LOG_LEVEL %q: %w", cfg.Level, err))
 	}
 	zerolog.SetGlobalLevel(level)
 

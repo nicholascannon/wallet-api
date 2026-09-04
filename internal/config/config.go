@@ -40,10 +40,10 @@ type LoggingConfig struct {
 }
 
 // Load reads configuration from environment variables with sensible defaults
-func Load() (*Config, error) {
+func Load() *Config {
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return nil, fmt.Errorf("failed to parse config: %w", err)
+		panic(fmt.Errorf("failed to parse config: %w", err))
 	}
-	return &cfg, nil
+	return &cfg
 }

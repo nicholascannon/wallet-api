@@ -13,11 +13,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to load configuration")
-	}
-
+	cfg := config.Load()
 	log.Logger = logger.New(&cfg.Logging)
 
 	if err := database.Connect(&cfg.Database, log.Logger); err != nil {
