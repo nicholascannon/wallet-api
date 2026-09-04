@@ -22,9 +22,9 @@ func main() {
 
 	router := gin.New()
 	router.Use(
+		middleware.Recovery(),
 		middleware.RequestID(),
 		middleware.Logger(),
-		middleware.Recovery(),
 		middleware.Timeout(cfg.Server.RequestTimeout),
 	)
 
