@@ -24,7 +24,7 @@ func Connect(cfg *config.DatabaseConfig) error {
 		Str("database", cfg.Name).
 		Msg("Connecting to database")
 
-	gormLogger := NewGormLogger(200 * time.Millisecond) // Log queries slower than 200ms
+	gormLogger := NewDbLogger(200 * time.Millisecond) // Log queries slower than 200ms
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
